@@ -1,0 +1,96 @@
+import { NextResponse } from 'next/server';
+import { db } from '@/db';
+import { users, roles } from '@/db/schema';
+import { eq } from 'drizzle-orm';
+import bcrypt from 'bcryptjs';
+import { getCurrentUser } from '@/lib/auth';
+
+export async function GET() {
+  try {
+    const adminUser = await getCurrentUser();
+    if (!adminUser || adminUser.roleName !== 'admin') {
+      return NextResponse.json({ success: false, error: 'Không có quyền truy cập' }, { status: 403 });
+    }
+
+    const list = await db.select({
+      id: users.id,
+      username: users.username,
+      fullName: users.fullName,
+      phone: users.phone,
+      status: users.status,
+      roleId: users.roleId,
+      roleName: roles.name,
+      createdAt: users.createdAt,
+    })
+    .from(users)
+    .leftJoin(roles, eq(users.roleId, roles.id));
+
+    return NextResponse.json({ success: true, data: list });
+  } catch (error: any) {
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+  }
+}
+
+export async function POST(request: Request) {
+  try {
+    const adminUser = await getCurrentUser();
+    if (!adminUser || adminUser.roleName !== 'admin') {
+       return NextResponse.json({ success: false, error: 'Chỉ Admin mới có quyền tạo tài khoản' }, { status: 403 });
+    }
+
+    const { username, password, fullName, phone, roleId } = await request.json();
+    if (!username || !password || !fullName) {
+      return NextResponse.json({ success: false, error: 'Thiếu thông tin bắt buộc' }, { status: 400 });
+    }
+
+    // Check if user exists
+    const existing = await db.select().from(users).where(eq(users.username, username)).limit(1);
+    if (existing.length > 0) {
+      return NextResponse.json({ success: false, error: 'Tên đăng nhập đã tồn tại' }, { status: 400 });
+    }
+
+    const salt = bcrypt.genSaltSync(10);
+    const passwordHash = bcrypt.hashSync(password, salt);
+
+    const inserted = await db.insert(users).values({
+      username,
+      passwordHash,
+      fullName,
+      phone,
+      roleId: Number(roleId)
+    }).returning({ id: users.id, username: users.username, fullName: users.fullName });
+
+    return NextResponse.json({ success: true, data: inserted[0] });
+  } catch (error: any) {
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+  }
+}
+
+export async function PUT(request: Request) {
+  try {
+    const adminUser = await getCurrentUser();
+    if (!adminUser || adminUser.roleName !== 'admin') {
+       return NextResponse.json({ success: false, error: 'Không có quyền' }, { status: 403 });
+    }
+
+    const { id, fullName, phone, roleId, status, password } = await request.json();
+    if (!id) return NextResponse.json({ success: false, error: 'Thiếu ID' }, { status: 400 });
+
+    const updateData: any = {};
+    if (fullName) updateData.fullName = fullName;
+    if (phone !== undefined) updateData.phone = phone;
+    if (roleId) updateData.roleId = Number(roleId);
+    if (status) updateData.status = status;
+    if (password && password.trim() !== '') {
+       const salt = bcrypt.genSaltSync(10);
+       updateData.passwordHash = bcrypt.hashSync(password, salt);
+    }
+    updateData.updatedAt = new Date().toISOString();
+
+    const updated = await db.update(users).set(updateData).where(eq(users.id, Number(id))).returning({ id: users.id });
+
+    return NextResponse.json({ success: true, data: updated[0] });
+  } catch (error: any) {
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+  }
+}
