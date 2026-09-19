@@ -184,6 +184,7 @@ export default function PosPage() {
 
       if (resAreas.success) {
         setAreas(resAreas.data);
+        try { localStorage.setItem('pos_areas_cache', JSON.stringify(resAreas.data)); } catch {}
         const targetId = keepTableId !== undefined ? keepTableId : selectedTable?.id;
         if (targetId) {
           let updatedTable: Table | null = null;
@@ -204,14 +205,30 @@ export default function PosPage() {
           }
         }
       }
-      if (resCats.success) setCategories(resCats.data);
-      if (resProds.success) setProducts(resProds.data);
+      if (resCats.success) {
+        setCategories(resCats.data);
+        try { localStorage.setItem('pos_cats_cache', JSON.stringify(resCats.data)); } catch {}
+      }
+      if (resProds.success) {
+        setProducts(resProds.data);
+        try { localStorage.setItem('pos_prods_cache', JSON.stringify(resProds.data)); } catch {}
+      }
     } catch (err) {
       console.error('Lỗi nạp dữ liệu POS:', err);
     }
   };
 
   useEffect(() => {
+    // Instant 0ms render from local cache
+    try {
+      const cachedAreas = localStorage.getItem('pos_areas_cache');
+      const cachedCats = localStorage.getItem('pos_cats_cache');
+      const cachedProds = localStorage.getItem('pos_prods_cache');
+      if (cachedAreas) setAreas(JSON.parse(cachedAreas));
+      if (cachedCats) setCategories(JSON.parse(cachedCats));
+      if (cachedProds) setProducts(JSON.parse(cachedProds));
+    } catch {}
+
     // eslint-disable-next-line react-hooks/exhaustive-deps, react-hooks/set-state-in-effect
     loadData();
   }, []);
