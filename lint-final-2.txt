@@ -1,0 +1,46 @@
+
+> ql-quanbia@0.1.0 lint
+> eslint
+
+
+C:\Users\Anh Huy\develop\QL_quanbia\src\app\api\products\route.ts
+   4:14  warning  'like' is defined but never used                  @typescript-eslint/no-unused-vars
+   4:20  warning  'or' is defined but never used                    @typescript-eslint/no-unused-vars
+  12:9   error    'query' is never reassigned. Use 'const' instead  prefer-const
+
+C:\Users\Anh Huy\develop\QL_quanbia\src\app\api\settings\route.ts
+  31:51  warning  '_' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Anh Huy\develop\QL_quanbia\src\app\api\tables\route.ts
+  53:12  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Anh Huy\develop\QL_quanbia\src\app\api\users\route.ts
+  79:23  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Anh Huy\develop\QL_quanbia\src\app\inventory\page.tsx
+  5:34  warning  'Beer' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Anh Huy\develop\QL_quanbia\src\app\pos\page.tsx
+  212:5  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+  214:6  warning  React Hook useEffect has a missing dependency: 'loadData'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\Anh Huy\develop\QL_quanbia\src\app\products\page.tsx
+  33:5  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/purity')
+  79:5  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+C:\Users\Anh Huy\develop\QL_quanbia\src\app\reports\page.tsx
+  5:21  warning  'TrendingUp' is defined but never used    @typescript-eslint/no-unused-vars
+  5:45  warning  'Beer' is defined but never used          @typescript-eslint/no-unused-vars
+  9:40  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Anh Huy\develop\QL_quanbia\src\app\tables\page.tsx
+  80:5  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+  82:6  warning  React Hook useEffect has a missing dependency: 'loadAreas'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\Anh Huy\develop\QL_quanbia\src\app\users\page.tsx
+  29:5  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/purity')
+  72:5  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+Ô£û 18 problems (3 errors, 15 warnings)
+  1 error and 6 warnings potentially fixable with the `--fix` option.
+

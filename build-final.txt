@@ -1,0 +1,61 @@
+
+> ql-quanbia@0.1.0 build
+> next build
+
+Ôû▓ Next.js 16.3.5 (Turbopack)
+- Environments: .env.local
+ÔÜá Warning: Next.js ignored package-lock.json in C:\Users\Anh Huy because it is outside the current Git repository (C:\Users\Anh Huy\develop\QL_quanbia).
+ To use this directory, set `turbopack.root` in your Next.js config.
+
+Ô£ô Running next.config.ts took 37ms
+
+ÔÜá The "middleware" file convention is deprecated. Please use "proxy" instead.
+
+  To migrate automatically, run:
+  npx @next/codemod@canary middleware-to-proxy .
+
+  Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+  Creating an optimized production build ...
+Ô£ô Compiled successfully in 1254ms
+  Running TypeScript ...
+  Finished TypeScript in 3.6s ...
+  Collecting page data using 11 workers ...
+  Generating static pages using 11 workers (0/24) ...
+  Generating static pages using 11 workers (6/24) 
+  Generating static pages using 11 workers (12/24) 
+  Generating static pages using 11 workers (18/24) 
+Ô£ô Generating static pages using 11 workers (24/24) in 475ms
+  Finalizing page optimization ...
+
+Route (app)
+Ôöî Ôùï /
+Ôö£ Ôùï /_not-found
+Ôö£ ãÆ /api/areas
+Ôö£ ãÆ /api/auth/login
+Ôö£ ãÆ /api/auth/logout
+Ôö£ ãÆ /api/auth/me
+Ôö£ ãÆ /api/categories
+Ôö£ ãÆ /api/orders
+Ôö£ ãÆ /api/orders/[id]/pay
+Ôö£ ãÆ /api/products
+Ôö£ ãÆ /api/roles
+Ôö£ ãÆ /api/settings
+Ôö£ ãÆ /api/tables
+Ôö£ ãÆ /api/tables/move
+Ôö£ ãÆ /api/users
+Ôö£ Ôùï /inventory
+Ôö£ Ôùï /login
+Ôö£ Ôùï /orders
+Ôö£ Ôùï /pos
+Ôö£ Ôùï /products
+Ôö£ Ôùï /reports
+Ôö£ Ôùï /settings
+Ôö£ Ôùï /tables
+Ôöö Ôùï /users
+
+
+ãÆ Proxy (Middleware)
+
+Ôùï  (Static)   prerendered as static content
+ãÆ  (Dynamic)  server-rendered on demand
+

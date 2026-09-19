@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Header from '@/components/Header';
-import { ClipboardList, Search, Eye, Calendar, CheckCircle2, Clock, Banknote, QrCode } from 'lucide-react';
+import { ClipboardList, Search, Eye, Banknote, QrCode } from 'lucide-react';
 import { formatVND, formatDate } from '@/lib/utils';
 
 interface Order {
@@ -19,30 +19,36 @@ interface Order {
   createdAt: string;
   paidAt: string | null;
   table?: { name: string };
-  items?: any[];
+  items?: {
+    productName: string;
+    quantity: number;
+    amount: number;
+  }[];
 }
 
 export default function OrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
-  const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<'all' | 'serving' | 'completed'>('all');
   const [search, setSearch] = useState('');
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
 
-  const loadOrders = async () => {
-    try {
-      const res = await fetch('/api/orders');
-      const data = await res.json();
-      if (data.success) setOrders(data.data);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
+    let mounted = true;
+    const loadOrders = async () => {
+      try {
+        const res = await fetch('/api/orders');
+        const data = await res.json();
+        if (data.success && mounted) {
+          setOrders(data.data);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    };
     loadOrders();
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   const filteredOrders = orders.filter((o) => {
@@ -199,7 +205,7 @@ export default function OrdersPage() {
             <div className="space-y-2 max-h-60 overflow-y-auto">
               <div className="text-xs font-bold text-slate-400 border-b border-slate-800 pb-1">DANH SÁCH MÓN GỌI</div>
               {selectedOrder.items && selectedOrder.items.length > 0 ? (
-                selectedOrder.items.map((item: any, idx: number) => (
+                selectedOrder.items.map((item, idx: number) => (
                   <div key={idx} className="flex justify-between text-xs py-1 border-b border-slate-800/40">
                     <span className="text-slate-200">
                       {item.productName} <span className="text-amber-400 font-bold">x{item.quantity}</span>

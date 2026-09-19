@@ -1,0 +1,72 @@
+
+> ql-quanbia@0.1.0 lint
+> eslint
+
+
+C:\Users\Anh Huy\develop\QL_quanbia\src\app\api\products\route.ts
+   4:14  warning  'like' is defined but never used                  @typescript-eslint/no-unused-vars
+   4:20  warning  'or' is defined but never used                    @typescript-eslint/no-unused-vars
+  12:9   error    'query' is never reassigned. Use 'const' instead  prefer-const
+
+C:\Users\Anh Huy\develop\QL_quanbia\src\app\api\settings\route.ts
+  31:51  warning  '_' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Anh Huy\develop\QL_quanbia\src\app\api\tables\route.ts
+  53:12  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Anh Huy\develop\QL_quanbia\src\app\api\users\route.ts
+  79:23  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Anh Huy\develop\QL_quanbia\src\app\inventory\page.tsx
+  5:34  warning  'Beer' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Anh Huy\develop\QL_quanbia\src\app\pos\page.tsx
+  100:5   error    Include a description after the "@ts-expect-error" directive to explain why the @ts-expect-error is necessary. The description must be 3 characters or longer                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      @typescript-eslint/ban-ts-comment
+  101:91  error    Error: Cannot call impure function during render
+
+`Math.random` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+C:\Users\Anh Huy\develop\QL_quanbia\src\app\pos\page.tsx:101:91
+   99 |   const addToast = (type: 'success' | 'error' | 'warning' | 'info', message: string) => {
+  100 |     // @ts-expect-error
+> 101 |     const id = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : Math.random().toString();
+      |                                                                                           ^^^^^^^^^^^^^ Cannot call impure function
+  102 |     setToasts((prev) => [...prev, { id, type, message }]);
+  103 |     setTimeout(() => {
+  104 |       setToasts((prev) => prev.filter((t) => t.id !== id));  react-hooks/purity
+  210:5   warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+  213:6   warning  React Hook useEffect has a missing dependency: 'loadData'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        react-hooks/exhaustive-deps
+
+C:\Users\Anh Huy\develop\QL_quanbia\src\app\products\page.tsx
+  33:5  error    Include a description after the "@ts-expect-error" directive to explain why the @ts-expect-error is necessary. The description must be 3 characters or longer  @typescript-eslint/ban-ts-comment
+  77:5  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+C:\Users\Anh Huy\develop\QL_quanbia\src\app\reports\page.tsx
+  5:21  warning  'TrendingUp' is defined but never used    @typescript-eslint/no-unused-vars
+  5:45  warning  'Beer' is defined but never used          @typescript-eslint/no-unused-vars
+  9:40  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Anh Huy\develop\QL_quanbia\src\app\tables\page.tsx
+  35:5   error    Include a description after the "@ts-expect-error" directive to explain why the @ts-expect-error is necessary. The description must be 3 characters or longer                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 @typescript-eslint/ban-ts-comment
+  36:91  error    Error: Cannot call impure function during render
+
+`Math.random` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+C:\Users\Anh Huy\develop\QL_quanbia\src\app\tables\page.tsx:36:91
+  34 |   const addToast = (type: 'success' | 'error' | 'warning' | 'info', message: string) => {
+  35 |     // @ts-expect-error
+> 36 |     const id = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : Math.random().toString();
+     |                                                                                           ^^^^^^^^^^^^^ Cannot call impure function
+  37 |     setToasts((prev) => [...prev, { id, type, message }]);
+  38 |     setTimeout(() => {
+  39 |       setToasts((prev) => prev.filter((t) => t.id !== id));  react-hooks/purity
+  78:5   warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+  81:6   warning  React Hook useEffect has a missing dependency: 'loadAreas'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  react-hooks/exhaustive-deps
+
+C:\Users\Anh Huy\develop\QL_quanbia\src\app\users\page.tsx
+  29:5  error    Include a description after the "@ts-expect-error" directive to explain why the @ts-expect-error is necessary. The description must be 3 characters or longer  @typescript-eslint/ban-ts-comment
+  70:5  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+Ô£û 22 problems (9 errors, 13 warnings)
+  1 error and 4 warnings potentially fixable with the `--fix` option.
+

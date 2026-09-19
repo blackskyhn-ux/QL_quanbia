@@ -84,7 +84,7 @@ export default function SettingsPage() {
       } else {
         setMessage({ type: 'error', text: data.error || 'Đã có lỗi xảy ra' });
       }
-    } catch (error) {
+    } catch {
       setMessage({ type: 'error', text: 'Không thể kết nối đến máy chủ.' });
     } finally {
       setSaving(false);

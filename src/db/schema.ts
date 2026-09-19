@@ -87,6 +87,7 @@ export const orders = sqliteTable('orders', {
   paymentStatus: text('payment_status').notNull().default('unpaid'), // 'unpaid', 'paid'
   customerCount: integer('customer_count').default(1),
   notes: text('notes'),
+  version: integer('version').notNull().default(1),
   createdAt: text('created_at').default(sql`(CURRENT_TIMESTAMP)`),
   updatedAt: text('updated_at').default(sql`(CURRENT_TIMESTAMP)`),
   paidAt: text('paid_at'),

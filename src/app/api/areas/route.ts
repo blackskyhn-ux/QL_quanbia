@@ -39,8 +39,8 @@ export async function GET() {
     });
 
     return NextResponse.json({ success: true, data: result });
-  } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    return NextResponse.json({ success: false, error: (error as Error).message }, { status: 500 });
   }
 }
 
@@ -55,8 +55,8 @@ export async function POST(request: Request) {
     }).returning();
     
     return NextResponse.json({ success: true, data: inserted[0] });
-  } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    return NextResponse.json({ success: false, error: (error as Error).message }, { status: 500 });
   }
 }
 
@@ -72,8 +72,8 @@ export async function PUT(request: Request) {
     }).where(eq(areas.id, Number(id))).returning();
 
     return NextResponse.json({ success: true, data: updated[0] });
-  } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    return NextResponse.json({ success: false, error: (error as Error).message }, { status: 500 });
   }
 }
 
@@ -86,7 +86,7 @@ export async function DELETE(request: Request) {
     // Try to soft delete
     const updated = await db.update(areas).set({ isActive: false }).where(eq(areas.id, Number(id))).returning();
     return NextResponse.json({ success: true, data: updated[0] });
-  } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    return NextResponse.json({ success: false, error: (error as Error).message }, { status: 500 });
   }
 }

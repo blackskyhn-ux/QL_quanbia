@@ -15,8 +15,8 @@ export async function POST(request: Request) {
     }).returning();
     
     return NextResponse.json({ success: true, data: inserted[0] });
-  } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    return NextResponse.json({ success: false, error: (error as Error).message }, { status: 500 });
   }
 }
 
@@ -34,8 +34,8 @@ export async function PUT(request: Request) {
     }).where(eq(tables.id, Number(id))).returning();
 
     return NextResponse.json({ success: true, data: updated[0] });
-  } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    return NextResponse.json({ success: false, error: (error as Error).message }, { status: 500 });
   }
 }
 
@@ -50,7 +50,7 @@ export async function DELETE(request: Request) {
     // However, if there's a constraint violation it'll throw an error, which is caught and returned.
     const deleted = await db.delete(tables).where(eq(tables.id, Number(id))).returning();
     return NextResponse.json({ success: true, data: deleted[0] });
-  } catch (error: any) {
+  } catch (error: unknown) {
     return NextResponse.json({ success: false, error: 'Không thể xoá bàn này (Có thể đang dính đơn hàng cũ).' }, { status: 500 });
   }
 }

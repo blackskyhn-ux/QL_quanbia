@@ -7,7 +7,6 @@ import {
   Search,
   Plus,
   Minus,
-  Trash2,
   CheckCircle2,
   QrCode,
   Banknote,
@@ -15,14 +14,13 @@ import {
   Printer,
   Users,
   Utensils,
-  Clock,
-  Sparkles,
   ArrowRightLeft,
   X,
   Loader2,
   Receipt,
   Edit3,
 } from 'lucide-react';
+import Image from 'next/image';
 import { formatVND } from '@/lib/utils';
 
 import ToastContainer, { ToastMessage } from '@/components/Toast';
@@ -79,18 +77,35 @@ interface Order {
   status: string;
   customerCount?: number;
   notes?: string;
+  version?: number;
   items?: OrderItem[];
+  updatedAt?: string;
+}
+
+interface ReceiptData {
+  tableName: string;
+  orderId: number;
+  subtotal: number;
+  discountAmount: number;
+  finalAmount: number;
+  paymentMethod: string;
+  receivedCash: number;
+  changeAmount: number;
+  items: OrderItem[];
+  date: string;
 }
 
 export default function PosPage() {
   // Toasts
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
   const addToast = (type: 'success' | 'error' | 'warning' | 'info', message: string) => {
-    const id = Date.now().toString() + Math.random().toString();
+    /* eslint-disable react-hooks/purity */
+        const id = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : Math.random().toString();
     setToasts((prev) => [...prev, { id, type, message }]);
     setTimeout(() => {
       setToasts((prev) => prev.filter((t) => t.id !== id));
     }, 3000);
+    /* eslint-enable react-hooks/purity */
   };
   const removeToast = (id: string) => setToasts((prev) => prev.filter((t) => t.id !== id));
 
@@ -125,6 +140,7 @@ export default function PosPage() {
   const [customerCount, setCustomerCount] = useState<number>(2);
   const [discountPercent, setDiscountPercent] = useState<number>(0);
   const [orderNotes, setOrderNotes] = useState<string>('');
+  const [orderUpdatedAt, setOrderUpdatedAt] = useState<string | null>(null);
 
   // Item Note Modal
   const [editingItemNote, setEditingItemNote] = useState<{ productId: number; productName: string; note: string } | null>(null);
@@ -142,7 +158,7 @@ export default function PosPage() {
   const [receivedCash, setReceivedCash] = useState<string>('');
   const [isProcessingPay, setIsProcessingPay] = useState(false);
   const [showInvoiceModal, setShowInvoiceModal] = useState(false);
-  const [paidReceipt, setPaidReceipt] = useState<any>(null);
+  const [paidReceipt, setPaidReceipt] = useState<ReceiptData | null>(null);
 
   // Load Settings & Initial Data with Auto Sync
   const loadData = async (keepTableId?: number) => {
@@ -183,6 +199,7 @@ export default function PosPage() {
               setDiscountPercent(currentOrd.discountPercent || 0);
               setCustomerCount(currentOrd.customerCount || 2);
               setOrderNotes(currentOrd.notes || '');
+              setOrderUpdatedAt(currentOrd.updatedAt || null);
             }
           }
         }
@@ -195,6 +212,7 @@ export default function PosPage() {
   };
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/exhaustive-deps, react-hooks/set-state-in-effect
     loadData();
   }, []);
 
@@ -208,11 +226,13 @@ export default function PosPage() {
       setDiscountPercent(table.currentOrder.discountPercent || 0);
       setCustomerCount(table.currentOrder.customerCount || 2);
       setOrderNotes(table.currentOrder.notes || '');
+      setOrderUpdatedAt(table.currentOrder.updatedAt || null);
     } else {
       setCartItems([]);
       setDiscountPercent(0);
       setCustomerCount(2);
       setOrderNotes('');
+      setOrderUpdatedAt(null);
     }
   };
 
@@ -244,6 +264,7 @@ export default function PosPage() {
         addToast('error', data.error || 'Lỗi khi chuyển bàn');
       }
     } catch (err) {
+      console.error(err);
       addToast('error', 'Lỗi kết nối khi chuyển bàn');
     } finally {
       setIsMovingTable(false);
@@ -329,19 +350,30 @@ export default function PosPage() {
           customerCount,
           discountPercent,
           notes: orderNotes,
+          updatedAt: orderUpdatedAt,
+          version: selectedTable.currentOrder?.version,
         }),
       });
 
       const data = await res.json();
       if (data.success) {
+        if (data.data && data.data.updatedAt) {
+          setOrderUpdatedAt(data.data.updatedAt);
+        }
         await loadData(selectedTable.id);
         setSavingOrder(false);
         addToast('success', `Đã lưu đơn thành công cho ${selectedTable.name}!`);
       } else {
-        addToast('error', data.error || 'Lỗi khi lưu đơn');
+        if (res.status === 409) {
+           addToast('warning', 'Đơn hàng đã được thay đổi bởi người khác, tự động tải lại...');
+           await loadData(selectedTable.id);
+        } else {
+          addToast('error', data.error || 'Lỗi khi lưu đơn');
+        }
         setSavingOrder(false);
       }
     } catch (err) {
+      console.error(err);
       addToast('error', 'Lỗi kết nối máy chủ');
       setSavingOrder(false);
     }
@@ -364,11 +396,23 @@ export default function PosPage() {
           customerCount,
           discountPercent,
           notes: orderNotes,
+          version: selectedTable.currentOrder?.version,
         }),
       });
       const dataSave = await resSave.json();
       if (dataSave.success) {
         orderId = dataSave.data.orderId;
+        if (dataSave.data.updatedAt) {
+          setOrderUpdatedAt(dataSave.data.updatedAt);
+        }
+      } else {
+        addToast('error', `[POST /api/orders FAILED ${resSave.status}] ${dataSave.error}`);
+        if (resSave.status === 409) {
+          addToast('warning', 'Đơn hàng đã được cập nhật bởi người khác, đang tải lại...');
+          await loadData(selectedTable.id);
+        }
+        setIsProcessingPay(false);
+        return;
       }
 
       if (!orderId) {
@@ -410,10 +454,11 @@ export default function PosPage() {
         setSelectedTable(null);
         await loadData();
       } else {
-        addToast('error', dataPay.error || 'Lỗi thanh toán');
+        addToast('error', `[PAY API FAILED ${resPay.status}] ${dataPay.error}`);
         setIsProcessingPay(false);
       }
     } catch (err) {
+      console.error(err);
       addToast('error', 'Lỗi kết nối khi thanh toán');
       setIsProcessingPay(false);
     }
@@ -648,10 +693,12 @@ export default function PosPage() {
                     <div className="space-y-2">
                       <div className="aspect-video w-full rounded-lg bg-slate-800 overflow-hidden relative">
                         {product.imageUrl ? (
-                          <img
+                          <Image
                             src={product.imageUrl}
                             alt={product.name}
-                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                            fill
+                            unoptimized
+                            className="object-cover group-hover:scale-110 transition-transform duration-300"
                           />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center text-slate-600">
@@ -978,13 +1025,16 @@ export default function PosPage() {
             {/* VietQR Dynamic Code Display */}
             {paymentMethod === 'transfer' && (
               <div className="bg-slate-950 p-4 rounded-xl border border-slate-800 flex flex-col items-center text-center space-y-3">
-                <div className="bg-white p-2.5 rounded-2xl shadow-xl">
-                  <img
+                <div className="bg-white p-2.5 rounded-2xl shadow-xl flex justify-center items-center">
+                  <Image
                     src={`https://img.vietqr.io/image/${bankConfig.bankId}-${bankConfig.accountNo}-compact2.png?amount=${finalTotal}&addInfo=${encodeURIComponent(
                       `TT ${selectedTable?.name || ''}`
                     )}&accountName=${encodeURIComponent(bankConfig.accountName)}`}
                     alt="VietQR Payment Code"
-                    className="w-48 h-48 object-contain"
+                    width={192}
+                    height={192}
+                    unoptimized
+                    className="object-contain"
                   />
                 </div>
                 <div className="text-xs space-y-0.5">
@@ -1090,7 +1140,7 @@ export default function PosPage() {
                 <span className="col-span-2 text-center">SL</span>
                 <span className="col-span-4 text-right">Thành tiền</span>
               </div>
-              {paidReceipt.items.map((item: any, idx: number) => (
+              {paidReceipt.items.map((item, idx: number) => (
                 <div key={idx} className="grid grid-cols-12 text-slate-800">
                   <span className="col-span-6 truncate">
                     {item.productName}

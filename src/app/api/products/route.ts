@@ -9,7 +9,7 @@ export async function GET(request: Request) {
     const categoryId = searchParams.get('categoryId');
     const search = searchParams.get('search');
 
-    let query = db
+    const query = db
       .select({
         id: products.id,
         categoryId: products.categoryId,
@@ -45,8 +45,8 @@ export async function GET(request: Request) {
     }
 
     return NextResponse.json({ success: true, data: filtered });
-  } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    return NextResponse.json({ success: false, error: (error as Error).message }, { status: 500 });
   }
 }
 
@@ -75,8 +75,8 @@ export async function POST(request: Request) {
       .returning();
 
     return NextResponse.json({ success: true, data: inserted[0] });
-  } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    return NextResponse.json({ success: false, error: (error as Error).message }, { status: 500 });
   }
 }
 
@@ -102,8 +102,8 @@ export async function PUT(request: Request) {
       .returning();
 
     return NextResponse.json({ success: true, data: updated[0] });
-  } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    return NextResponse.json({ success: false, error: (error as Error).message }, { status: 500 });
   }
 }
 
@@ -124,7 +124,7 @@ export async function DELETE(request: Request) {
       .returning();
 
     return NextResponse.json({ success: true, data: updated[0] });
-  } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    return NextResponse.json({ success: false, error: (error as Error).message }, { status: 500 });
   }
 }

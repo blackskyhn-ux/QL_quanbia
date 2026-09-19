@@ -1,0 +1,29 @@
+
+> ql-quanbia@0.1.0 build
+> next build
+
+Ôû▓ Next.js 16.3.5 (Turbopack)
+- Environments: .env.local
+ÔÜá Warning: Next.js ignored package-lock.json in C:\Users\Anh Huy because it is outside the current Git repository (C:\Users\Anh Huy\develop\QL_quanbia).
+ To use this directory, set `turbopack.root` in your Next.js config.
+
+Ô£ô Running next.config.ts took 56ms
+
+ÔÜá The "middleware" file convention is deprecated. Please use "proxy" instead.
+
+  To migrate automatically, run:
+  npx @next/codemod@canary middleware-to-proxy .
+
+  Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+  Creating an optimized production build ...
+Ô£ô Compiled successfully in 1097ms
+  Running TypeScript ...
+src/app/api/tables/route.ts(19,56): error TS2552: Cannot find name 'error'. Did you mean 'Error'?
+src/app/api/tables/route.ts(38,56): error TS2552: Cannot find name 'error'. Did you mean 'Error'?
+src/app/pos/page.tsx(101,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/products/page.tsx(34,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/tables/page.tsx(36,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/users/page.tsx(30,5): error TS2578: Unused '@ts-expect-error' directive.
+src/app/users/page.tsx(65,21): error TS2304: Cannot find name 'e'.
+Failed to type check.
+

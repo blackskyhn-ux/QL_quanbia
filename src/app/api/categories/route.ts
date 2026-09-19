@@ -7,8 +7,8 @@ export async function GET() {
   try {
     const list = await db.select().from(categories).where(eq(categories.isActive, true)).orderBy(categories.sortOrder);
     return NextResponse.json({ success: true, data: list });
-  } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    return NextResponse.json({ success: false, error: (error as Error).message }, { status: 500 });
   }
 }
 
@@ -24,8 +24,8 @@ export async function POST(request: Request) {
     }).returning();
 
     return NextResponse.json({ success: true, data: inserted[0] });
-  } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    return NextResponse.json({ success: false, error: (error as Error).message }, { status: 500 });
   }
 }
 
@@ -42,8 +42,8 @@ export async function PUT(request: Request) {
     }).where(eq(categories.id, Number(id))).returning();
 
     return NextResponse.json({ success: true, data: updated[0] });
-  } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    return NextResponse.json({ success: false, error: (error as Error).message }, { status: 500 });
   }
 }
 
@@ -56,7 +56,7 @@ export async function DELETE(request: Request) {
     // Soft delete category
     const updated = await db.update(categories).set({ isActive: false }).where(eq(categories.id, Number(id))).returning();
     return NextResponse.json({ success: true, data: updated[0] });
-  } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    return NextResponse.json({ success: false, error: (error as Error).message }, { status: 500 });
   }
 }

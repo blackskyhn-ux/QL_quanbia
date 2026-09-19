@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Header from '@/components/Header';
-import { LayoutGrid, Plus, Users, Utensils, CheckCircle2, Clock, X, Edit2, Trash2, ShieldCog, Save } from 'lucide-react';
+import { LayoutGrid, Plus, Users, Edit2, Trash2, ShieldCog, Save } from 'lucide-react';
 import { formatVND } from '@/lib/utils';
 import Link from 'next/link';
 
@@ -22,22 +22,27 @@ interface Table {
   seats: number;
   status: 'available' | 'occupied' | 'reserved' | 'maintenance';
   currentOrderId: number | null;
-  currentOrder?: any;
+  currentOrder?: {
+    finalAmount?: number;
+    totalAmount?: number;
+    customerCount?: number;
+  };
 }
 
 export default function TablesPage() {
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
   const addToast = (type: 'success' | 'error' | 'warning' | 'info', message: string) => {
-    const id = Date.now().toString() + Math.random().toString();
+    /* eslint-disable react-hooks/purity */
+        const id = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : Math.random().toString();
     setToasts((prev) => [...prev, { id, type, message }]);
     setTimeout(() => {
       setToasts((prev) => prev.filter((t) => t.id !== id));
     }, 3000);
+    /* eslint-enable react-hooks/purity */
   };
   const removeToast = (id: string) => setToasts((prev) => prev.filter((t) => t.id !== id));
 
   const [areas, setAreas] = useState<Area[]>([]);
-  const [loading, setLoading] = useState(true);
   const [selectedAreaId, setSelectedAreaId] = useState<number | 'all'>('all');
   
   // Admin Editing Mode
@@ -56,14 +61,12 @@ export default function TablesPage() {
       const data = await res.json();
       if (data.success) {
         setAreas(data.data);
-        if (selectedAreaId !== 'all' && !data.data.find((a: any) => a.id === selectedAreaId)) {
+        if (selectedAreaId !== 'all' && !data.data.find((a: Area) => a.id === selectedAreaId)) {
           setSelectedAreaId('all');
         }
       }
     } catch (err) {
       console.error(err);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -73,6 +76,7 @@ export default function TablesPage() {
       .then(d => {
         if (d.success && d.user.roleName === 'admin') setIsAdmin(true);
       });
+    // eslint-disable-next-line react-hooks/exhaustive-deps, react-hooks/set-state-in-effect
     loadAreas();
   }, []);
 
@@ -97,7 +101,7 @@ export default function TablesPage() {
         addToast('success', editingAreaInfo.id ? 'Đã cập nhật khu vực thành công' : 'Đã thêm khu vực mới');
         await loadAreas();
       } else addToast('error', data.error);
-    } catch (e) { addToast('error', 'Lỗi lưu khu vực'); }
+    } catch { addToast('error', 'Lỗi lưu khu vực'); }
   };
 
   const handleDeleteArea = async (id: number) => {
@@ -109,7 +113,7 @@ export default function TablesPage() {
         addToast('success', 'Đã tạm ngưng khu vực');
         await loadAreas();
       } else addToast('error', data.error);
-    } catch (e) { addToast('error', 'Lỗi khi xóa khu vực'); }
+    } catch { addToast('error', 'Lỗi khi xóa khu vực'); }
   };
 
   // -- Table Management --
@@ -129,7 +133,7 @@ export default function TablesPage() {
         addToast('success', editingTableInfo.id ? 'Đã cập nhật bàn thành công' : 'Đã tạo bàn mới');
         await loadAreas();
       } else addToast('error', data.error);
-    } catch (e) { addToast('error', 'Lỗi lưu bàn'); }
+    } catch { addToast('error', 'Lỗi lưu bàn'); }
   };
 
   const handleDeleteTable = async (id: number) => {
@@ -141,7 +145,7 @@ export default function TablesPage() {
         addToast('success', 'Đã xoá bàn thành công');
         await loadAreas();
       } else addToast('error', data.error);
-    } catch (e) { addToast('error', 'Lỗi kết nối'); }
+    } catch { addToast('error', 'Lỗi kết nối'); }
   };
 
   return (

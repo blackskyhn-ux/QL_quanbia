@@ -39,7 +39,7 @@ export default function LoginPage() {
 
       router.push('/pos');
       router.refresh();
-    } catch (err) {
+    } catch {
       setError('Đã xảy ra lỗi kết nối máy chủ. Vui lòng thử lại.');
       setLoading(false);
     }

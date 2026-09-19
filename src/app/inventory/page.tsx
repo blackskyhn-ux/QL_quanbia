@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Header from '@/components/Header';
 import { Package, AlertTriangle, Beer, CheckCircle2, Search } from 'lucide-react';
-import { formatVND } from '@/lib/utils';
+// import { formatVND } from '@/lib/utils';
 
 interface Product {
   id: number;
@@ -18,7 +18,7 @@ interface Product {
 export default function InventoryPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [search, setSearch] = useState('');
-  const [loading, setLoading] = useState(true);
+  const [, setLoading] = useState(true);
 
   useEffect(() => {
     fetch('/api/products')

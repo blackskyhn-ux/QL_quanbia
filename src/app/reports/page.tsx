@@ -6,8 +6,8 @@ import { BarChart3, TrendingUp, DollarSign, Beer, QrCode, Banknote, ShoppingBag 
 import { formatVND } from '@/lib/utils';
 
 export default function ReportsPage() {
-  const [orders, setOrders] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [orders, setOrders] = useState<{status?: string, finalAmount?: number, paymentMethod?: string}[]>([]);
+  const [, setLoading] = useState(true);
 
   useEffect(() => {
     fetch('/api/orders')

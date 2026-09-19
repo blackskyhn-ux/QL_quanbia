@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import Header from '@/components/Header';
-import { UtensilsCrossed, Plus, Search, Edit, Beer, Trash2, X, CheckCircle2, MoreVertical, Edit2, AlertCircle, Save } from 'lucide-react';
+import { UtensilsCrossed, Plus, Search, Beer, Trash2, X, CheckCircle2, Edit2, AlertCircle, Save } from 'lucide-react';
 import { formatVND } from '@/lib/utils';
+import Image from 'next/image';
 
 import ToastContainer, { ToastMessage } from '@/components/Toast';
 
@@ -29,17 +30,18 @@ interface Category {
 export default function ProductsPage() {
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
   const addToast = (type: 'success' | 'error' | 'warning' | 'info', message: string) => {
-    const id = Date.now().toString() + Math.random().toString();
+    /* eslint-disable react-hooks/purity */
+        const id = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : Math.random().toString();
     setToasts((prev) => [...prev, { id, type, message }]);
     setTimeout(() => {
       setToasts((prev) => prev.filter((t) => t.id !== id));
     }, 3000);
+    /* eslint-enable react-hooks/purity */
   };
   const removeToast = (id: string) => setToasts((prev) => prev.filter((t) => t.id !== id));
 
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
-  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [selectedCat, setSelectedCat] = useState<number | 'all'>('all');
   
@@ -69,12 +71,11 @@ export default function ProductsPage() {
       }
     } catch (err) {
       console.error(err);
-    } finally {
-      setLoading(false);
     }
   };
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/exhaustive-deps, react-hooks/set-state-in-effect
     loadData();
   }, []);
 
@@ -137,6 +138,7 @@ export default function ProductsPage() {
         addToast('error', data.error || 'Lỗi khi xử lý món ăn');
       }
     } catch (err) {
+      console.error(err);
       addToast('error', 'Lỗi kết nối máy chủ');
     }
   };
@@ -153,6 +155,7 @@ export default function ProductsPage() {
         addToast('error', data.error);
       }
     } catch (err) {
+      console.error(err);
       addToast('error', 'Lỗi kết nối');
     }
   };
@@ -169,7 +172,9 @@ export default function ProductsPage() {
         addToast('success', 'Đã mở bán lại món ăn');
         await loadData();
       }
-    } catch (err) {}
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const filtered = products.filter((p) => {
@@ -259,7 +264,7 @@ export default function ProductsPage() {
                 <div className="space-y-2">
                   <div className="aspect-video w-full rounded-xl bg-slate-800 overflow-hidden relative">
                     {product.imageUrl ? (
-                      <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" />
+                      <Image src={product.imageUrl} alt={product.name} fill unoptimized className="object-cover" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-slate-600">
                         <Beer className="w-8 h-8" />

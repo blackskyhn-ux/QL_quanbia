@@ -5,9 +5,9 @@ import { eq } from 'drizzle-orm';
 import bcrypt from 'bcryptjs';
 import { getCurrentUser } from '@/lib/auth';
 
-export async function GET() {
+export async function GET(request?: Request) {
   try {
-    const adminUser = await getCurrentUser();
+    const adminUser = await getCurrentUser(request);
     if (!adminUser || adminUser.roleName !== 'admin') {
       return NextResponse.json({ success: false, error: 'Không có quyền truy cập' }, { status: 403 });
     }
@@ -26,14 +26,14 @@ export async function GET() {
     .leftJoin(roles, eq(users.roleId, roles.id));
 
     return NextResponse.json({ success: true, data: list });
-  } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    return NextResponse.json({ success: false, error: (error as Error).message }, { status: 500 });
   }
 }
 
 export async function POST(request: Request) {
   try {
-    const adminUser = await getCurrentUser();
+    const adminUser = await getCurrentUser(request);
     if (!adminUser || adminUser.roleName !== 'admin') {
        return NextResponse.json({ success: false, error: 'Chỉ Admin mới có quyền tạo tài khoản' }, { status: 403 });
     }
@@ -61,8 +61,8 @@ export async function POST(request: Request) {
     }).returning({ id: users.id, username: users.username, fullName: users.fullName });
 
     return NextResponse.json({ success: true, data: inserted[0] });
-  } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    return NextResponse.json({ success: false, error: (error as Error).message }, { status: 500 });
   }
 }
 
@@ -76,7 +76,7 @@ export async function PUT(request: Request) {
     const { id, fullName, phone, roleId, status, password } = await request.json();
     if (!id) return NextResponse.json({ success: false, error: 'Thiếu ID' }, { status: 400 });
 
-    const updateData: any = {};
+    const updateData: Record<string, string | number> = {};
     if (fullName) updateData.fullName = fullName;
     if (phone !== undefined) updateData.phone = phone;
     if (roleId) updateData.roleId = Number(roleId);
@@ -90,7 +90,7 @@ export async function PUT(request: Request) {
     const updated = await db.update(users).set(updateData).where(eq(users.id, Number(id))).returning({ id: users.id });
 
     return NextResponse.json({ success: true, data: updated[0] });
-  } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    return NextResponse.json({ success: false, error: (error as Error).message }, { status: 500 });
   }
 }

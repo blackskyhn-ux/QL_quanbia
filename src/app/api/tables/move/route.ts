@@ -6,7 +6,7 @@ import { getCurrentUser } from '@/lib/auth';
 
 export async function POST(request: Request) {
   try {
-    const user = await getCurrentUser();
+    await getCurrentUser();
     const body = await request.json();
     const { fromTableId, toTableId } = body;
 
@@ -135,7 +135,7 @@ export async function POST(request: Request) {
         message: 'Đã gộp đơn hàng và gộp bàn thành công!',
       });
     }
-  } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    return NextResponse.json({ success: false, error: (error as Error).message }, { status: 500 });
   }
 }

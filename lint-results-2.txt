@@ -1,0 +1,183 @@
+
+> ql-quanbia@0.1.0 lint
+> eslint
+
+
+C:\Users\Anh Huy\develop\QL_quanbia\src\app\api\orders\route.ts
+    3:38  warning  'products' is defined but never used      @typescript-eslint/no-unused-vars
+   66:26  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  131:41  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Anh Huy\develop\QL_quanbia\src\app\api\products\route.ts
+   4:14  warning  'like' is defined but never used                  @typescript-eslint/no-unused-vars
+   4:20  warning  'or' is defined but never used                    @typescript-eslint/no-unused-vars
+  12:9   error    'query' is never reassigned. Use 'const' instead  prefer-const
+
+C:\Users\Anh Huy\develop\QL_quanbia\src\app\api\settings\route.ts
+  31:51  warning  '_' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Anh Huy\develop\QL_quanbia\src\app\api\tables\move\route.ts
+  9:11  warning  'user' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Anh Huy\develop\QL_quanbia\src\app\api\tables\route.ts
+  53:12  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Anh Huy\develop\QL_quanbia\src\app\api\users\route.ts
+  79:23  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Anh Huy\develop\QL_quanbia\src\app\inventory\page.tsx
+   5:34  warning  'Beer' is defined but never used              @typescript-eslint/no-unused-vars
+   6:10  warning  'formatVND' is defined but never used         @typescript-eslint/no-unused-vars
+  21:10  warning  'loading' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Anh Huy\develop\QL_quanbia\src\app\login\page.tsx
+  42:14  warning  'err' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Anh Huy\develop\QL_quanbia\src\app\pos\page.tsx
+  100:5   error    Use "@ts-expect-error" instead of "@ts-ignore", as "@ts-ignore" will do nothing if the following line is error-free                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              @typescript-eslint/ban-ts-comment
+  101:91  error    Error: Cannot call impure function during render
+
+`Math.random` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+C:\Users\Anh Huy\develop\QL_quanbia\src\app\pos\page.tsx:101:91
+   99 |   const addToast = (type: 'success' | 'error' | 'warning' | 'info', message: string) => {
+  100 |     // @ts-ignore
+> 101 |     const id = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : Math.random().toString();
+      |                                                                                           ^^^^^^^^^^^^^ Cannot call impure function
+  102 |     setToasts((prev) => [...prev, { id, type, message }]);
+  103 |     setTimeout(() => {
+  104 |       setToasts((prev) => prev.filter((t) => t.id !== id));                                                                      react-hooks/purity
+  210:5   warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+  211:5   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\Anh Huy\develop\QL_quanbia\src\app\pos\page.tsx:211:5
+  209 |   useEffect(() => {
+  210 |     // eslint-disable-next-line react-hooks/exhaustive-deps
+> 211 |     loadData();
+      |     ^^^^^^^^ Avoid calling setState() directly within an effect
+  212 |   }, []);
+  213 |
+  214 |   // Handle Table Selection  react-hooks/set-state-in-effect
+  212:6   warning  React Hook useEffect has a missing dependency: 'loadData'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      react-hooks/exhaustive-deps
+
+C:\Users\Anh Huy\develop\QL_quanbia\src\app\products\page.tsx
+  33:5  error    Use "@ts-expect-error" instead of "@ts-ignore", as "@ts-ignore" will do nothing if the following line is error-free                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              @typescript-eslint/ban-ts-comment
+  77:5  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+  78:5  error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\Anh Huy\develop\QL_quanbia\src\app\products\page.tsx:78:5
+  76 |   useEffect(() => {
+  77 |     // eslint-disable-next-line react-hooks/exhaustive-deps
+> 78 |     loadData();
+     |     ^^^^^^^^ Avoid calling setState() directly within an effect
+  79 |   }, []);
+  80 |
+  81 |   const openAddModal = () => {  react-hooks/set-state-in-effect
+
+C:\Users\Anh Huy\develop\QL_quanbia\src\app\reports\page.tsx
+   5:21  warning  'TrendingUp' is defined but never used        @typescript-eslint/no-unused-vars
+   5:45  warning  'Beer' is defined but never used              @typescript-eslint/no-unused-vars
+   9:40  error    Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+  10:10  warning  'loading' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Anh Huy\develop\QL_quanbia\src\app\settings\page.tsx
+  87:14  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Anh Huy\develop\QL_quanbia\src\app\tables\page.tsx
+   35:5   error    Use "@ts-expect-error" instead of "@ts-ignore", as "@ts-ignore" will do nothing if the following line is error-free                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               @typescript-eslint/ban-ts-comment
+   36:91  error    Error: Cannot call impure function during render
+
+`Math.random` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+C:\Users\Anh Huy\develop\QL_quanbia\src\app\tables\page.tsx:36:91
+  34 |   const addToast = (type: 'success' | 'error' | 'warning' | 'info', message: string) => {
+  35 |     // @ts-ignore
+> 36 |     const id = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : Math.random().toString();
+     |                                                                                           ^^^^^^^^^^^^^ Cannot call impure function
+  37 |     setToasts((prev) => [...prev, { id, type, message }]);
+  38 |     setTimeout(() => {
+  39 |       setToasts((prev) => prev.filter((t) => t.id !== id));                                                                                                            react-hooks/purity
+   78:5   warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+   79:5   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\Anh Huy\develop\QL_quanbia\src\app\tables\page.tsx:79:5
+  77 |       });
+  78 |     // eslint-disable-next-line react-hooks/exhaustive-deps
+> 79 |     loadAreas();
+     |     ^^^^^^^^^ Avoid calling setState() directly within an effect
+  80 |   }, []);
+  81 |
+  82 |   const totalTables = areas.reduce((acc, a) => acc + a.tables.length, 0);  react-hooks/set-state-in-effect
+   80:6   warning  React Hook useEffect has a missing dependency: 'loadAreas'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      react-hooks/exhaustive-deps
+  103:14  warning  'e' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     @typescript-eslint/no-unused-vars
+  115:14  warning  'e' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     @typescript-eslint/no-unused-vars
+  135:14  warning  'e' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     @typescript-eslint/no-unused-vars
+  147:14  warning  'e' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     @typescript-eslint/no-unused-vars
+
+C:\Users\Anh Huy\develop\QL_quanbia\src\app\users\page.tsx
+   29:5   error    Use "@ts-expect-error" instead of "@ts-ignore", as "@ts-ignore" will do nothing if the following line is error-free                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      @typescript-eslint/ban-ts-comment
+   70:5   warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+   71:5   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\Anh Huy\develop\QL_quanbia\src\app\users\page.tsx:71:5
+  69 |   useEffect(() => {
+  70 |     // eslint-disable-next-line react-hooks/exhaustive-deps
+> 71 |     loadData();
+     |     ^^^^^^^^ Avoid calling setState() directly within an effect
+  72 |   }, []);
+  73 |
+  74 |   const openAdd = () => {  react-hooks/set-state-in-effect
+  112:14  warning  'err' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          @typescript-eslint/no-unused-vars
+  129:14  warning  'e' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            @typescript-eslint/no-unused-vars
+
+C:\Users\Anh Huy\develop\QL_quanbia\src\components\Header.tsx
+  58:5  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\Anh Huy\develop\QL_quanbia\src\components\Header.tsx:58:5
+  56 |   // Close mobile menu on page navigation
+  57 |   useEffect(() => {
+> 58 |     setMobileMenuOpen(false);
+     |     ^^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  59 |   }, [pathname]);
+  60 |
+  61 |   const handleLogout = async () => {  react-hooks/set-state-in-effect
+
+C:\Users\Anh Huy\develop\QL_quanbia\src\db\seed.ts
+  41:9  warning  'insertedUsers' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\Anh Huy\develop\QL_quanbia\src\lib\auth.ts
+  40:12  warning  'err' is defined but never used  @typescript-eslint/no-unused-vars
+
+Ô£û 44 problems (16 errors, 28 warnings)
+  1 error and 4 warnings potentially fixable with the `--fix` option.
+

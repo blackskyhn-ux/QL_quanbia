@@ -39,3 +39,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# local databases & test artifacts
+*.db
+/test-results
+tmp_test_log.txt
+vitest-*.txt
+

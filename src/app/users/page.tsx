@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Header from '@/components/Header';
-import { UserCheck, Edit2, ShieldAlert, CheckCircle2, ShieldOff, Plus, Search, Save, X } from 'lucide-react';
+import { UserCheck, Edit2, ShieldAlert, CheckCircle2, ShieldOff, Plus, Save } from 'lucide-react';
 
 import ToastContainer, { ToastMessage } from '@/components/Toast';
 
@@ -26,11 +26,13 @@ interface Role {
 export default function UsersPage() {
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
   const addToast = (type: 'success' | 'error' | 'warning' | 'info', message: string) => {
-    const id = Date.now().toString() + Math.random().toString();
+    /* eslint-disable react-hooks/purity */
+        const id = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : Math.random().toString();
     setToasts((prev) => [...prev, { id, type, message }]);
     setTimeout(() => {
       setToasts((prev) => prev.filter((t) => t.id !== id));
     }, 3000);
+    /* eslint-enable react-hooks/purity */
   };
   const removeToast = (id: string) => setToasts((prev) => prev.filter((t) => t.id !== id));
 
@@ -58,7 +60,7 @@ export default function UsersPage() {
       ]);
       if (uRes.success) setUsers(uRes.data);
       if (rRes.success) setRoles(rRes.data);
-    } catch (e) {
+    } catch (e: unknown) {
       console.error(e);
     } finally {
       setLoading(false);
@@ -66,6 +68,7 @@ export default function UsersPage() {
   };
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/exhaustive-deps, react-hooks/set-state-in-effect
     loadData();
   }, []);
 
@@ -107,7 +110,7 @@ export default function UsersPage() {
       } else {
         addToast('error', data.error);
       }
-    } catch (err) {
+    } catch (e: unknown) {
       addToast('error', 'Lỗi kết nối máy chủ');
     }
   };
@@ -124,7 +127,7 @@ export default function UsersPage() {
         addToast('info', `Đã ${newStatus === 'active' ? 'mở khóa' : 'khóa'} tài khoản`);
         loadData();
       }
-    } catch (e) {}
+    } catch (e: unknown) {}
   };
 
   if (loading) return <div className="min-h-screen bg-[#090d16] text-white flex items-center justify-center">Đang tải...</div>;

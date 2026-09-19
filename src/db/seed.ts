@@ -38,7 +38,7 @@ async function seed() {
   const adminPasswordHash = await bcrypt.hash('admin123', 10);
   const cashierPasswordHash = await bcrypt.hash('cashier123', 10);
 
-  const insertedUsers = await db
+  await db
     .insert(schema.users)
     .values([
       {

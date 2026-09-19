@@ -17,7 +17,7 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json({ success: true, user: result.user });
-  } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message || 'Lỗi hệ thống khi đăng nhập' }, { status: 500 });
+  } catch (error: unknown) {
+    return NextResponse.json({ success: false, error: (error as Error).message || 'Lỗi hệ thống khi đăng nhập' }, { status: 500 });
   }
 }
