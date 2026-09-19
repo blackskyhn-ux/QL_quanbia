@@ -164,6 +164,29 @@ export async function ensureDbInitialized() {
       }
     }
 
+    // 1b. Ensure new columns exist on existing tables (Turso schema migration)
+    const alterQueries = [
+      `ALTER TABLE orders ADD COLUMN version INTEGER DEFAULT 1;`,
+      `ALTER TABLE orders ADD COLUMN cancelled_at TEXT;`,
+      `ALTER TABLE orders ADD COLUMN cancelled_by INTEGER;`,
+      `ALTER TABLE orders ADD COLUMN cancel_reason TEXT;`,
+      `ALTER TABLE orders ADD COLUMN refunded_at TEXT;`,
+      `ALTER TABLE orders ADD COLUMN refunded_by INTEGER;`,
+      `ALTER TABLE orders ADD COLUMN refund_reason TEXT;`,
+      `ALTER TABLE orders ADD COLUMN refund_amount REAL DEFAULT 0;`,
+      `ALTER TABLE order_items ADD COLUMN unit_cost REAL DEFAULT 0;`,
+      `ALTER TABLE order_items ADD COLUMN note TEXT;`,
+      `ALTER TABLE products ADD COLUMN cost_price REAL DEFAULT 0;`
+    ];
+
+    for (const alterQ of alterQueries) {
+      try {
+        await client.execute(alterQ);
+      } catch {
+        // Column already exists
+      }
+    }
+
     // 2. Safely check if users exist
     let hasUsers = false;
     try {
