@@ -3,10 +3,13 @@ import { db } from '@/db';
 import { areas, tables, orders, orderItems } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 
+import { ensureDbInitialized } from '@/db/init';
+
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
+    await ensureDbInitialized();
     const areaList = await db.select().from(areas).where(eq(areas.isActive, true)).orderBy(areas.sortOrder);
     const tableList = await db.select().from(tables);
     const activeOrders = await db.select().from(orders).where(eq(orders.status, 'serving'));

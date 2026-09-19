@@ -4,10 +4,13 @@ import { orders, orderItems, products, categories, cashShifts } from '@/db/schem
 import { eq, inArray, desc } from 'drizzle-orm';
 import { getCurrentUser } from '@/lib/auth';
 
+import { ensureDbInitialized } from '@/db/init';
+
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: Request) {
   try {
+    await ensureDbInitialized();
     const user = await getCurrentUser(request);
     if (!user) {
       return NextResponse.json({ success: false, error: 'Chưa đăng nhập' }, { status: 401 });

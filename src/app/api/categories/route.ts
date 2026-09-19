@@ -3,10 +3,13 @@ import { db } from '@/db';
 import { categories } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 
+import { ensureDbInitialized } from '@/db/init';
+
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
+    await ensureDbInitialized();
     const list = await db.select().from(categories).where(eq(categories.isActive, true)).orderBy(categories.sortOrder);
     return NextResponse.json({ success: true, data: list });
   } catch (error: unknown) {

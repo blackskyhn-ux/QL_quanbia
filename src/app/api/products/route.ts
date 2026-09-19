@@ -3,10 +3,13 @@ import { db } from '@/db';
 import { products, categories } from '@/db/schema';
 import { eq, like, or } from 'drizzle-orm';
 
+import { ensureDbInitialized } from '@/db/init';
+
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: Request) {
   try {
+    await ensureDbInitialized();
     const { searchParams } = new URL(request.url);
     const categoryId = searchParams.get('categoryId');
     const search = searchParams.get('search');

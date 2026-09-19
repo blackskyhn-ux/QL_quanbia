@@ -1,10 +1,13 @@
 import { NextResponse } from 'next/server';
 import { loginUser } from '@/lib/auth';
 
+import { ensureDbInitialized } from '@/db/init';
+
 export const dynamic = 'force-dynamic';
 
 export async function POST(request: Request) {
   try {
+    await ensureDbInitialized();
     const body = await request.json();
     const { username, password } = body;
 
