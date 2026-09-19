@@ -11,32 +11,48 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const tableId = searchParams.get('tableId');
     const status = searchParams.get('status');
+    const limit = searchParams.get('limit') ? Number(searchParams.get('limit')) : 100;
 
-    const orderList = await db.select().from(orders).orderBy(desc(orders.createdAt));
-
-    let filtered = orderList;
+    const conditions = [];
 
     if (tableId) {
-      filtered = filtered.filter((o) => o.tableId === Number(tableId));
+      conditions.push(eq(orders.tableId, Number(tableId)));
     }
 
     if (status) {
-      filtered = filtered.filter((o) => o.status === status);
+      conditions.push(eq(orders.status, status));
     }
 
-    // Attach items and table info
-    const allItems = await db.select().from(orderItems);
-    const allTables = await db.select().from(tables);
+    const filteredOrders = await db
+      .select()
+      .from(orders)
+      .where(conditions.length > 0 ? and(...conditions) : undefined)
+      .orderBy(desc(orders.createdAt))
+      .limit(limit);
 
-    const result = filtered.map((order) => {
-      const items = allItems.filter((i) => i.orderId === order.id);
-      const table = allTables.find((t) => t.id === order.tableId);
-      return {
-        ...order,
-        table,
-        items,
-      };
-    });
+    if (filteredOrders.length === 0) {
+      return NextResponse.json({ success: true, data: [] });
+    }
+
+    const orderIds = filteredOrders.map((o) => o.id);
+    const [matchedItems, matchedTables] = await Promise.all([
+      db.select().from(orderItems).where(inArray(orderItems.orderId, orderIds)),
+      db.select().from(tables),
+    ]);
+
+    const tableMap = new Map(matchedTables.map((t) => [t.id, t]));
+    const itemMap = new Map<number, any[]>();
+    for (const item of matchedItems) {
+      const list = itemMap.get(item.orderId) || [];
+      list.push(item);
+      itemMap.set(item.orderId, list);
+    }
+
+    const result = filteredOrders.map((order) => ({
+      ...order,
+      table: order.tableId ? tableMap.get(order.tableId) : null,
+      items: itemMap.get(order.id) || [],
+    }));
 
     return NextResponse.json({ success: true, data: result });
   } catch (error: unknown) {
@@ -74,9 +90,9 @@ export async function POST(request: Request) {
       const actualCost = dbProduct ? Number(dbProduct.costPrice || 0) : Number(item.unitCost || 0);
       const actualName = dbProduct ? dbProduct.name : item.productName;
       const quantity = Number(item.quantity);
-      
+
       totalAmount += actualPrice * quantity;
-      
+
       return {
         productId: Number(item.productId),
         productName: actualName,
@@ -115,7 +131,7 @@ export async function POST(request: Request) {
             // Update existing order
             orderId = activeOrders[0].id;
             orderNumber = activeOrders[0].orderNumber;
-            
+
             // ATOMIC OPTIMISTIC LOCKING VIA DATABASE WHERE CONDITION
             const clientVersion = body.version !== undefined && body.version !== null ? Number(body.version) : undefined;
             if (clientVersion === undefined || isNaN(clientVersion)) {
@@ -224,10 +240,6 @@ export async function POST(request: Request) {
       data: transactionResult,
     });
   } catch (error: any) {
-    try {
-      const fs = require('fs');
-      fs.appendFileSync('tmp_test_log.txt', `\n>>> POST /api/orders ERROR: ${error.message} <<<\n`);
-    } catch (e) {}
     if (error.message === 'MISSING_VERSION') {
       return NextResponse.json({ success: false, error: 'Thiếu thông tin phiên bản (version) đơn hàng' }, { status: 400 });
     }

@@ -54,7 +54,8 @@ export default function OrdersPage() {
 
   const fetchOrders = async () => {
     try {
-      const res = await fetch('/api/orders');
+      const url = statusFilter !== 'all' ? `/api/orders?status=${statusFilter}&limit=100` : '/api/orders?limit=100';
+      const res = await fetch(url);
       const data = await res.json();
       if (data.success) {
         setOrders(data.data);
@@ -66,7 +67,7 @@ export default function OrdersPage() {
 
   useEffect(() => {
     fetchOrders();
-  }, []);
+  }, [statusFilter]);
 
   const handleCancelOrder = async () => {
     if (!selectedOrder || !reason.trim()) {

@@ -1,8 +1,7 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/db';
 import { products, categories } from '@/db/schema';
-import { eq, like, or } from 'drizzle-orm';
-
+import { eq, like, or, and, sql } from 'drizzle-orm';
 import { ensureDbInitialized } from '@/db/init';
 
 export const dynamic = 'force-dynamic';
@@ -14,7 +13,18 @@ export async function GET(request: Request) {
     const categoryId = searchParams.get('categoryId');
     const search = searchParams.get('search');
 
-    const query = db
+    const conditions = [eq(products.isAvailable, true)];
+
+    if (categoryId && categoryId !== 'all') {
+      conditions.push(eq(products.categoryId, Number(categoryId)));
+    }
+
+    if (search && search.trim() !== '') {
+      const s = `%${search.trim().toLowerCase()}%`;
+      conditions.push(or(like(sql`LOWER(${products.name})`, s), like(sql`LOWER(${products.code})`, s)) as any);
+    }
+
+    const productList = await db
       .select({
         id: products.id,
         categoryId: products.categoryId,
@@ -31,25 +41,10 @@ export async function GET(request: Request) {
         categoryName: categories.name,
       })
       .from(products)
-      .leftJoin(categories, eq(products.categoryId, categories.id));
+      .leftJoin(categories, eq(products.categoryId, categories.id))
+      .where(and(...conditions));
 
-    const productList = await query;
-
-    let filtered = productList;
-
-    if (categoryId && categoryId !== 'all') {
-      const catIdNum = parseInt(categoryId, 10);
-      filtered = filtered.filter((p) => p.categoryId === catIdNum);
-    }
-
-    if (search && search.trim() !== '') {
-      const s = search.toLowerCase().trim();
-      filtered = filtered.filter(
-        (p) => p.name.toLowerCase().includes(s) || (p.code && p.code.toLowerCase().includes(s))
-      );
-    }
-
-    return NextResponse.json({ success: true, data: filtered });
+    return NextResponse.json({ success: true, data: productList });
   } catch (error: unknown) {
     return NextResponse.json({ success: false, error: (error as Error).message }, { status: 500 });
   }
@@ -116,12 +111,11 @@ export async function DELETE(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
-    
+
     if (!id) {
       return NextResponse.json({ success: false, error: 'Thiếu ID sản phẩm' }, { status: 400 });
     }
 
-    // Luôn ưu tiên Soft Delete
     const updated = await db
       .update(products)
       .set({ isAvailable: false })
