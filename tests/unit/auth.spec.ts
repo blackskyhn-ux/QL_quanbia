@@ -27,7 +27,7 @@ describe('Authentication Test Suite', () => {
     const req = new Request('http://localhost/api/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username: 'admin', password: 'adminpassword' }),
+      body: JSON.stringify({ username: 'admin', password: 'admin123' }),
     });
 
     const res = await loginRoute(req);

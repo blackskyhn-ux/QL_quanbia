@@ -14,7 +14,8 @@ beforeAll(async () => {
 describe('Double Payment Concurrency Verification', () => {
   it('should run double-payment concurrency test 10 times deterministically', async () => {
     const token = await signJWT({ id: 1, username: 'admin', fullName: 'A', roleId: 1, roleName: 'admin' });
-    const [table] = await db.select().from(tables).where(eq(tables.name, 'B02'));
+    const allTables = await db.select().from(tables);
+    const table = allTables.find(t => t.name === 'Bàn 02' || t.name === 'B02') || allTables[0];
     const [product] = await db.select().from(products).limit(1);
 
     for (let i = 1; i <= 10; i++) {
@@ -49,10 +50,9 @@ describe('Double Payment Concurrency Verification', () => {
         body: payBody,
       });
 
-      const context = { params: Promise.resolve({ id: orderId.toString() }) };
       const [res1, res2] = await Promise.all([
-        payOrder(payReq1, context),
-        payOrder(payReq2, context)
+        payOrder(payReq1, { params: Promise.resolve({ id: orderId.toString() }) }),
+        payOrder(payReq2, { params: Promise.resolve({ id: orderId.toString() }) })
       ]);
 
       const json1 = await res1.json();

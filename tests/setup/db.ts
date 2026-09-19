@@ -18,15 +18,24 @@ export async function setup() {
   console.log('1. Pushing schema to test.db...');
   
   // Use explicit env variables to override .env.local fallback in drizzle.config.ts
-  execSync('npx drizzle-kit push', {
-    env: { ...process.env, TURSO_DATABASE_URL: 'file:test.db' },
-    stdio: 'inherit',
-  });
+  try {
+    execSync('npx drizzle-kit push --force', {
+      env: { ...process.env, TURSO_DATABASE_URL: 'file:test.db' },
+      stdio: 'inherit',
+    });
+  } catch (e) {
+    // If --force is not supported by drizzle version, fallback to standard push
+    execSync('npx drizzle-kit push', {
+      env: { ...process.env, TURSO_DATABASE_URL: 'file:test.db' },
+      stdio: 'inherit',
+    });
+  }
 
   console.log('2. Wiping existing tables to ensure deterministic status...');
   // Note: Drizzle push doesn't truncate data, so we manually clean up tables
   await db.run(sql`DELETE FROM cash_transactions;`);
   await db.run(sql`DELETE FROM cash_shifts;`);
+  await db.run(sql`DELETE FROM audit_logs;`);
   await db.run(sql`DELETE FROM inventory_logs;`);
   await db.run(sql`DELETE FROM order_items;`);
   await db.run(sql`DELETE FROM orders;`);

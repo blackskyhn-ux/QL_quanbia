@@ -10,7 +10,7 @@ vi.mock('@/lib/auth', async (importOriginal) => {
         const user = await actual.getCurrentUser(req);
         if (user) return user;
         // If request has cookie header but it was invalid, or has no cookie header
-        const cookieHeader = req.headers.get('cookie');
+        const cookieHeader = (typeof req.headers?.get === 'function' ? (req.headers.get('cookie') || req.headers.get('Cookie')) : null) || (req.headers as any)['cookie'] || (req.headers as any)['Cookie'];
         if (!cookieHeader || !cookieHeader.includes('pos_token')) {
           return null;
         }

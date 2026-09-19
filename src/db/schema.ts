@@ -91,6 +91,13 @@ export const orders = sqliteTable('orders', {
   createdAt: text('created_at').default(sql`(CURRENT_TIMESTAMP)`),
   updatedAt: text('updated_at').default(sql`(CURRENT_TIMESTAMP)`),
   paidAt: text('paid_at'),
+  cancelledAt: text('cancelled_at'),
+  cancelledBy: integer('cancelled_by').references(() => users.id),
+  cancelReason: text('cancel_reason'),
+  refundedAt: text('refunded_at'),
+  refundedBy: integer('refunded_by').references(() => users.id),
+  refundReason: text('refund_reason'),
+  refundAmount: real('refund_amount').default(0),
 });
 
 export const orderItems = sqliteTable('order_items', {
@@ -99,10 +106,26 @@ export const orderItems = sqliteTable('order_items', {
   productId: integer('product_id').notNull().references(() => products.id),
   productName: text('product_name').notNull(),
   productPrice: real('product_price').notNull(),
+  unitCost: real('unit_cost').default(0),
   quantity: integer('quantity').notNull().default(1),
   amount: real('amount').notNull(),
   note: text('note'), // 'Ghi chú món: Ít cay, Không hành...'
   status: text('status').notNull().default('served'), // 'pending', 'cooking', 'served', 'cancelled'
+  createdAt: text('created_at').default(sql`(CURRENT_TIMESTAMP)`),
+});
+
+// -------------------------------------------------------------
+// 7. Audit Logs (Nhật ký thao tác tài chính / nhạy cảm)
+// -------------------------------------------------------------
+export const auditLogs = sqliteTable('audit_logs', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  action: text('action').notNull(), // 'ORDER_CANCELLED', 'ORDER_REFUNDED', 'PAYMENT_COMPLETED', 'INVENTORY_RESTORED'
+  entityType: text('entity_type').notNull().default('order'),
+  entityId: integer('entity_id').notNull(),
+  performedBy: integer('performed_by').references(() => users.id),
+  reason: text('reason'),
+  oldValue: text('old_value'),
+  newValue: text('new_value'),
   createdAt: text('created_at').default(sql`(CURRENT_TIMESTAMP)`),
 });
 

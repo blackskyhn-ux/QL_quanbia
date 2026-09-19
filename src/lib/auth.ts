@@ -69,7 +69,13 @@ export async function removeAuthCookie() {
 export async function getCurrentUser(req?: Request): Promise<UserPayload | null> {
   let token: string | undefined;
   if (req) {
-    const cookieHeader = req.headers.get('cookie') || '';
+    let cookieHeader = '';
+    if (typeof req.headers?.get === 'function') {
+      cookieHeader = req.headers.get('cookie') || req.headers.get('Cookie') || '';
+    }
+    if (!cookieHeader && req.headers) {
+      cookieHeader = (req.headers as any)['cookie'] || (req.headers as any)['Cookie'] || '';
+    }
     const match = cookieHeader.match(/pos_token=([^;]+)/);
     if (match) token = match[1];
   }

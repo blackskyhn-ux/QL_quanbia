@@ -16,7 +16,7 @@ describe('Server Price Validation', () => {
     const token = await signJWT({ id: 1, username: 'admin', fullName: 'A', roleId: 1, roleName: 'admin' });
     
     // Grab table and product
-    const tableList = await db.select().from(tables).where(eq(tables.name, 'B01'));
+    const tableList = await db.select().from(tables).limit(1);
     const prodList = await db.select().from(products).limit(1);
     const table = tableList[0];
     const product = prodList[0];

@@ -11,12 +11,12 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       return NextResponse.json({ success: false, error: 'Chưa đăng nhập' }, { status: 401 });
     }
 
-    // RBAC: Only admin or manager can cancel orders
+    // RBAC: Admin or Manager only
     const role = (user.roleName || '').toLowerCase().trim();
     const isManagement = ['admin', 'manager', 'quanly', 'quản lý', 'quản trị'].includes(role);
     if (!isManagement) {
       return NextResponse.json(
-        { success: false, error: 'Chỉ Admin hoặc Quản lý mới có quyền hủy đơn hàng' },
+        { success: false, error: 'Chỉ Admin hoặc Quản lý mới có quyền hoàn tiền đơn hàng' },
         { status: 403 }
       );
     }
@@ -28,9 +28,12 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     }
 
     const body = await request.json().catch(() => ({}));
-    const reason = (body.reason || 'Hủy đơn hàng').trim();
-    if (!reason) {
-      return NextResponse.json({ success: false, error: 'Vui lòng cung cấp lý do hủy' }, { status: 400 });
+    const reason = body.reason?.trim();
+    if (!reason || reason.length < 3) {
+      return NextResponse.json(
+        { success: false, error: 'Vui lòng nhập lý do hoàn tiền (tối thiểu 3 ký tự)' },
+        { status: 400 }
+      );
     }
 
     let retries = 5;
@@ -43,34 +46,39 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
           }
           const order = orderList[0];
 
-          if (order.status === 'cancelled') {
-            throw new Error('Đơn hàng đã bị hủy trước đó');
+          if (order.paymentStatus === 'refunded') {
+            throw new Error('Đơn hàng đã được hoàn tiền trước đó');
           }
 
-          const isPaid = order.paymentStatus === 'paid';
+          if (order.paymentStatus !== 'paid') {
+            throw new Error('Chỉ có thể hoàn tiền đơn hàng đã thanh toán');
+          }
+
           const nowIso = new Date().toISOString();
+          const refundAmount = body.refundAmount !== undefined ? Number(body.refundAmount) : order.finalAmount;
+
+          if (refundAmount <= 0 || refundAmount > order.finalAmount) {
+            throw new Error('Số tiền hoàn trả không hợp lệ');
+          }
 
           // ATOMIC CONDITIONAL CLAIM
           const updatedOrders = await tx
             .update(orders)
             .set({
               status: 'cancelled',
-              paymentStatus: isPaid ? 'refunded' : 'unpaid',
-              cancelledAt: nowIso,
-              cancelledBy: user.id,
-              cancelReason: reason,
-              refundedAt: isPaid ? nowIso : null,
-              refundedBy: isPaid ? user.id : null,
-              refundReason: isPaid ? reason : null,
-              refundAmount: isPaid ? order.finalAmount : 0,
+              paymentStatus: 'refunded',
+              refundedAt: nowIso,
+              refundedBy: user.id,
+              refundReason: reason,
+              refundAmount: refundAmount,
               version: sql`${orders.version} + 1`,
               updatedAt: nowIso,
             })
-            .where(and(eq(orders.id, orderId), eq(orders.status, order.status)))
+            .where(and(eq(orders.id, orderId), eq(orders.paymentStatus, 'paid')))
             .returning();
 
           if (updatedOrders.length === 0) {
-            throw new Error('Đơn hàng đã bị thay đổi bởi một thao tác khác');
+            throw new Error('Đơn hàng đã được hoàn tiền bởi một giao dịch khác');
           }
 
           // Reset table status if assigned
@@ -85,50 +93,46 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
               .where(eq(tables.id, Number(order.tableId)));
           }
 
-          // Restore inventory if order was paid
-          if (isPaid) {
-            const items = await tx.select().from(orderItems).where(eq(orderItems.orderId, orderId));
-            for (const item of items) {
-              const prodList = await tx.select().from(products).where(eq(products.id, item.productId));
-              if (prodList.length > 0) {
-                const prod = prodList[0];
-                const currentStock = prod.stockQuantity || 0;
-                const newStock = currentStock + item.quantity;
+          // Restore inventory
+          const items = await tx.select().from(orderItems).where(eq(orderItems.orderId, orderId));
+          for (const item of items) {
+            const prodList = await tx.select().from(products).where(eq(products.id, item.productId));
+            if (prodList.length > 0) {
+              const prod = prodList[0];
+              const currentStock = prod.stockQuantity || 0;
+              const newStock = currentStock + item.quantity;
 
-                await tx
-                  .update(products)
-                  .set({ stockQuantity: newStock })
-                  .where(eq(products.id, prod.id));
+              await tx
+                .update(products)
+                .set({ stockQuantity: newStock })
+                .where(eq(products.id, prod.id));
 
-                await tx.insert(inventoryLogs).values({
-                  productId: prod.id,
-                  type: 'import',
-                  quantity: item.quantity,
-                  previousStock: currentStock,
-                  newStock: newStock,
-                  note: `Hoàn kho do hủy đơn hàng #${order.orderNumber}: ${reason}`,
-                  createdBy: user.id,
-                });
-              }
+              await tx.insert(inventoryLogs).values({
+                productId: prod.id,
+                type: 'import',
+                quantity: item.quantity,
+                previousStock: currentStock,
+                newStock: newStock,
+                note: `Hoàn kho từ đơn hoàn tiền #${order.orderNumber}: ${reason}`,
+                createdBy: user.id,
+              });
             }
           }
 
           // Write audit log
           await tx.insert(auditLogs).values({
-            action: isPaid ? 'ORDER_CANCELLED_WITH_REFUND' : 'ORDER_CANCELLED',
+            action: 'ORDER_REFUNDED',
             entityType: 'order',
             entityId: orderId,
             performedBy: user.id,
             reason: reason,
             oldValue: JSON.stringify({
-              status: order.status,
               paymentStatus: order.paymentStatus,
               finalAmount: order.finalAmount,
             }),
             newValue: JSON.stringify({
-              status: 'cancelled',
-              paymentStatus: isPaid ? 'refunded' : 'unpaid',
-              refundAmount: isPaid ? order.finalAmount : 0,
+              paymentStatus: 'refunded',
+              refundAmount: refundAmount,
             }),
           });
         });
@@ -146,12 +150,15 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
 
     return NextResponse.json({
       success: true,
-      message: 'Hủy đơn hàng thành công!',
+      message: 'Hoàn tiền đơn hàng thành công!',
     });
   } catch (error: any) {
     if (error.message === 'Đơn hàng không tồn tại') return NextResponse.json({ success: false, error: error.message }, { status: 404 });
-    if (error.message?.includes('đã bị hủy') || error.message?.includes('thay đổi')) {
+    if (error.message?.includes('hoàn tiền') || error.message?.includes('thay đổi')) {
       return NextResponse.json({ success: false, error: error.message }, { status: 409 });
+    }
+    if (error.message?.includes('không hợp lệ') || error.message?.includes('thanh toán')) {
+      return NextResponse.json({ success: false, error: error.message }, { status: 400 });
     }
     return NextResponse.json({ success: false, error: error.message || 'Lỗi server' }, { status: 500 });
   }

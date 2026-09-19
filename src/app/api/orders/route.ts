@@ -69,6 +69,7 @@ export async function POST(request: Request) {
     const validatedItems = items.map((item: any) => {
       const dbProduct = productMap.get(Number(item.productId));
       const actualPrice = dbProduct ? Number(dbProduct.price) : Number(item.productPrice);
+      const actualCost = dbProduct ? Number(dbProduct.costPrice || 0) : Number(item.unitCost || 0);
       const actualName = dbProduct ? dbProduct.name : item.productName;
       const quantity = Number(item.quantity);
       
@@ -78,6 +79,7 @@ export async function POST(request: Request) {
         productId: Number(item.productId),
         productName: actualName,
         productPrice: actualPrice,
+        unitCost: actualCost,
         quantity: quantity,
         amount: actualPrice * quantity,
         note: item.note || '',
@@ -188,6 +190,7 @@ export async function POST(request: Request) {
             productId: item.productId,
             productName: item.productName,
             productPrice: item.productPrice,
+            unitCost: item.unitCost,
             quantity: item.quantity,
             amount: item.amount,
             note: item.note,

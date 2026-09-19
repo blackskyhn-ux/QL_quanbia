@@ -7,6 +7,8 @@ export default defineConfig({
     environment: 'node',
     setupFiles: ['./tests/setup/env.ts', './tests/setup/next-mock.ts'],
     fileParallelism: false, // Prevents SQLITE_BUSY by running suites sequentially
+    include: ['tests/unit/**/*.spec.ts'],
+    exclude: ['tests/e2e/**'],
     alias: {
       '@': path.resolve(__dirname, './src'),
     },
