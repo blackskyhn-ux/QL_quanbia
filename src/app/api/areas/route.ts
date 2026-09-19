@@ -1,8 +1,7 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/db';
 import { areas, tables, orders, orderItems } from '@/db/schema';
-import { eq } from 'drizzle-orm';
-
+import { inArray, eq } from 'drizzle-orm';
 import { ensureDbInitialized } from '@/db/init';
 
 export const dynamic = 'force-dynamic';
@@ -13,7 +12,12 @@ export async function GET() {
     const areaList = await db.select().from(areas).where(eq(areas.isActive, true)).orderBy(areas.sortOrder);
     const tableList = await db.select().from(tables);
     const activeOrders = await db.select().from(orders).where(eq(orders.status, 'serving'));
-    const allOrderItems = await db.select().from(orderItems);
+
+    const activeOrderIds = activeOrders.map((o) => o.id);
+    let allOrderItems: any[] = [];
+    if (activeOrderIds.length > 0) {
+      allOrderItems = await db.select().from(orderItems).where(inArray(orderItems.orderId, activeOrderIds));
+    }
 
     // Attach active orders with items to tables inside areas
     const result = areaList.map((area) => {

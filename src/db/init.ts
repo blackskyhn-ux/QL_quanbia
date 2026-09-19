@@ -6,6 +6,18 @@ let isInitialized = false;
 
 export async function ensureDbInitialized() {
   if (isInitialized) return;
+
+  // FAST-PATH: Single 20ms check query. If tables exist, skip all 24+ DDL network calls!
+  try {
+    const existingUsers = await db.select().from(schema.users).limit(1);
+    if (existingUsers.length > 0) {
+      isInitialized = true;
+      return;
+    }
+  } catch {
+    // Tables not created yet, proceed to create DDL
+  }
+
   try {
     const tableQueries = [
       `CREATE TABLE IF NOT EXISTS roles (
