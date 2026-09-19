@@ -3,6 +3,8 @@ import { db } from '@/db';
 import { products, categories } from '@/db/schema';
 import { eq, like, or } from 'drizzle-orm';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);

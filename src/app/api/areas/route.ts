@@ -3,6 +3,8 @@ import { db } from '@/db';
 import { areas, tables, orders, orderItems } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
     const areaList = await db.select().from(areas).where(eq(areas.isActive, true)).orderBy(areas.sortOrder);

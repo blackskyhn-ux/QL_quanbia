@@ -3,6 +3,8 @@ import { db } from '@/db';
 import { settings } from '@/db/schema';
 import { getCurrentUser } from '@/lib/auth';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
     const allSettings = await db.select().from(settings);

@@ -4,6 +4,8 @@ import { orders, tables, orderItems, products, inventoryLogs } from '@/db/schema
 import { eq, and, sql } from 'drizzle-orm';
 import { getCurrentUser } from '@/lib/auth';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const user = await getCurrentUser();

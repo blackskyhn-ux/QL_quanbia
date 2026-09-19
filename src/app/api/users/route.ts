@@ -5,6 +5,8 @@ import { eq } from 'drizzle-orm';
 import bcrypt from 'bcryptjs';
 import { getCurrentUser } from '@/lib/auth';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request?: Request) {
   try {
     const adminUser = await getCurrentUser(request);

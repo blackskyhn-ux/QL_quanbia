@@ -3,6 +3,8 @@ import { db } from '@/db';
 import { roles } from '@/db/schema';
 import { getCurrentUser } from '@/lib/auth';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
     const adminUser = await getCurrentUser();

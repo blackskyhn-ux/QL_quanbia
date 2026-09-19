@@ -4,6 +4,8 @@ import { orders, orderItems, products, categories, cashShifts } from '@/db/schem
 import { eq, inArray, desc } from 'drizzle-orm';
 import { getCurrentUser } from '@/lib/auth';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: Request) {
   try {
     const user = await getCurrentUser(request);

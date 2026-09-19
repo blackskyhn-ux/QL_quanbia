@@ -4,6 +4,8 @@ import { cashShifts, orders, cashTransactions } from '@/db/schema';
 import { eq, and, desc, sql } from 'drizzle-orm';
 import { getCurrentUser } from '@/lib/auth';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
     const user = await getCurrentUser();
