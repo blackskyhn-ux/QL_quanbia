@@ -1,9 +1,8 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/db';
-import { orders, orderItems, products, categories, cashShifts } from '@/db/schema';
-import { eq, inArray, desc } from 'drizzle-orm';
+import { orders, orderItems, cashShifts } from '@/db/schema';
+import { inArray, desc } from 'drizzle-orm';
 import { getCurrentUser } from '@/lib/auth';
-
 import { ensureDbInitialized } from '@/db/init';
 
 export const dynamic = 'force-dynamic';
@@ -17,7 +16,7 @@ export async function GET(request: Request) {
     }
 
     const { searchParams } = new URL(request.url);
-    const period = searchParams.get('period') || 'today'; // 'today', 'yesterday', '7days', '30days', 'month', 'last_month', 'year', 'custom'
+    const period = searchParams.get('period') || 'today';
     const startDateParam = searchParams.get('startDate');
     const endDateParam = searchParams.get('endDate');
 
@@ -37,23 +36,18 @@ export async function GET(request: Request) {
     };
 
     const todayStr = formatVnDate(vnDate);
-
     const yesterdayDate = new Date(vnDate.getTime() - 24 * 60 * 60 * 1000);
     const yesterdayStr = formatVnDate(yesterdayDate);
-
     const sevenDaysAgoDate = new Date(vnDate.getTime() - 6 * 24 * 60 * 60 * 1000);
     const sevenDaysAgoStr = formatVnDate(sevenDaysAgoDate);
-
     const thirtyDaysAgoDate = new Date(vnDate.getTime() - 29 * 24 * 60 * 60 * 1000);
     const thirtyDaysAgoStr = formatVnDate(thirtyDaysAgoDate);
 
     const monthStartStr = `${vnDate.getFullYear()}-${String(vnDate.getMonth() + 1).padStart(2, '0')}-01`;
-    
     const lastMonthDate = new Date(vnDate.getFullYear(), vnDate.getMonth() - 1, 1);
     const lastMonthStartStr = formatVnDate(lastMonthDate);
     const lastMonthEndObj = new Date(vnDate.getFullYear(), vnDate.getMonth(), 0);
     const lastMonthEndStr = formatVnDate(lastMonthEndObj);
-
     const yearStartStr = `${vnDate.getFullYear()}-01-01`;
 
     let filteredOrders = allOrders;
@@ -80,14 +74,11 @@ export async function GET(request: Request) {
       );
     }
 
-    // Classify orders
     const completedOrders = filteredOrders.filter((o) => o.status === 'completed' && o.paymentStatus === 'paid');
     const cancelledOrders = filteredOrders.filter((o) => o.status === 'cancelled');
     const servingOrders = filteredOrders.filter((o) => o.status === 'serving');
-
     const completedOrderIds = completedOrders.map((o) => o.id);
 
-    // Fetch order items for COGS and Product/Category breakdown
     let itemsForCompleted: any[] = [];
     if (completedOrderIds.length > 0) {
       itemsForCompleted = await db
@@ -96,11 +87,16 @@ export async function GET(request: Request) {
         .where(inArray(orderItems.orderId, completedOrderIds));
     }
 
-    // Financial KPIs
+    // Pre-calculate Map for order -> COGS (O(N) instead of O(N*M))
+    const orderCogsMap = new Map<number, number>();
+    for (const item of itemsForCompleted) {
+      const itemCost = (item.unitCost !== undefined && item.unitCost !== null ? Number(item.unitCost) : 0) * Number(item.quantity || 1);
+      const current = orderCogsMap.get(item.orderId) || 0;
+      orderCogsMap.set(item.orderId, current + itemCost);
+    }
+
     const totalRevenue = completedOrders.reduce((sum, o) => sum + (o.finalAmount || 0), 0);
     const totalDiscount = completedOrders.reduce((sum, o) => sum + (o.discountAmount || 0), 0);
-    
-    // COGS = sum of (unitCost * quantity) for all completed order items
     const cogs = itemsForCompleted.reduce((sum, item) => {
       const itemCost = item.unitCost !== undefined && item.unitCost !== null ? Number(item.unitCost) : 0;
       return sum + itemCost * Number(item.quantity || 1);
@@ -116,7 +112,6 @@ export async function GET(request: Request) {
     );
     const averageOrderValue = completedCount > 0 ? totalRevenue / completedCount : 0;
 
-    // Payment methods breakdown
     const paymentMethods = {
       cash: {
         count: completedOrders.filter((o) => o.paymentMethod === 'cash').length,
@@ -132,7 +127,6 @@ export async function GET(request: Request) {
       },
     };
 
-    // Product performance breakdown
     const productMap = new Map<number, { name: string; quantity: number; revenue: number; cogs: number; profit: number }>();
     for (const item of itemsForCompleted) {
       const pid = item.productId;
@@ -148,30 +142,20 @@ export async function GET(request: Request) {
     }
     const topProducts = Array.from(productMap.values()).sort((a, b) => b.revenue - a.revenue);
 
-    // Time trend calculation (Group by date or hour)
     const trendMap = new Map<string, { label: string; revenue: number; profit: number; orderCount: number }>();
     for (const order of completedOrders) {
       if (!order.createdAt) continue;
-      // Extract date label YYYY-MM-DD
       const dateKey = order.createdAt.substring(0, 10);
       const existing = trendMap.get(dateKey) || { label: dateKey, revenue: 0, profit: 0, orderCount: 0 };
       existing.revenue += order.finalAmount || 0;
       existing.orderCount += 1;
-
-      // Estimate order profit by item proportion
-      const orderItemsList = itemsForCompleted.filter((i) => i.orderId === order.id);
-      const orderCogs = orderItemsList.reduce(
-        (sum, i) => sum + (Number(i.unitCost || 0) * Number(i.quantity || 1)),
-        0
-      );
+      const orderCogs = orderCogsMap.get(order.id) || 0;
       existing.profit += (order.finalAmount || 0) - orderCogs;
-
       trendMap.set(dateKey, existing);
     }
     const trend = Array.from(trendMap.values()).sort((a, b) => a.label.localeCompare(b.label));
 
-    // Shift summary for period
-    const shifts = await db.select().from(cashShifts).orderBy(desc(cashShifts.startTime));
+    const shifts = await db.select().from(cashShifts).orderBy(desc(cashShifts.startTime)).limit(10);
 
     return NextResponse.json({
       success: true,
@@ -197,8 +181,7 @@ export async function GET(request: Request) {
         paymentMethods,
         topProducts,
         trend,
-        shifts: shifts.slice(0, 10),
-        orders: filteredOrders,
+        shifts,
       },
     });
   } catch (error: any) {

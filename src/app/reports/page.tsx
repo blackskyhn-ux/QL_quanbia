@@ -62,21 +62,30 @@ export default function ReportsPage() {
   const [endDate, setEndDate] = useState<string>('');
   const [data, setData] = useState<ReportData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const fetchReports = async () => {
     setLoading(true);
+    setError(null);
     try {
       let url = `/api/reports?period=${period}`;
       if (period === 'custom' && startDate && endDate) {
         url += `&startDate=${startDate}&endDate=${endDate}`;
       }
       const res = await fetch(url);
+      if (res.status === 401) {
+        window.location.href = '/login';
+        return;
+      }
       const json = await res.json();
       if (json.success) {
         setData(json.data);
+      } else {
+        setError(json.error || 'Không thể lấy dữ liệu báo cáo');
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
+      setError(err?.message || 'Lỗi kết nối đến máy chủ');
     } finally {
       setLoading(false);
     }
@@ -191,10 +200,23 @@ export default function ReportsPage() {
           </div>
         </div>
 
-        {loading || !data ? (
+        {loading ? (
           <div className="p-12 text-center text-slate-500 flex items-center justify-center gap-2">
             <RefreshCw className="w-5 h-5 animate-spin text-amber-400" /> Đang tải dữ liệu báo cáo...
           </div>
+        ) : error ? (
+          <div className="p-8 bg-rose-950/40 border border-rose-800/60 text-rose-300 rounded-2xl text-center space-y-3">
+            <AlertOctagon className="w-8 h-8 text-rose-400 mx-auto" />
+            <p className="font-semibold text-sm">{error}</p>
+            <button
+              onClick={fetchReports}
+              className="px-4 py-2 bg-rose-800 hover:bg-rose-700 text-white font-bold text-xs rounded-xl transition-all"
+            >
+              Thử lại
+            </button>
+          </div>
+        ) : !data ? (
+          <div className="p-12 text-center text-slate-500">Chưa có dữ liệu báo cáo.</div>
         ) : (
           <>
             {/* Financial KPI Cards */}
