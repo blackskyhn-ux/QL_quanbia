@@ -176,7 +176,7 @@ export async function ensureDbInitialized() {
       }
     }
 
-    // 1b. Ensure new columns exist on existing tables (Turso schema migration)
+    // 1b. Ensure new columns and performance indexes exist on existing tables (Turso schema migration)
     const alterQueries = [
       `ALTER TABLE orders ADD COLUMN version INTEGER DEFAULT 1;`,
       `ALTER TABLE orders ADD COLUMN cancelled_at TEXT;`,
@@ -188,7 +188,12 @@ export async function ensureDbInitialized() {
       `ALTER TABLE orders ADD COLUMN refund_amount REAL DEFAULT 0;`,
       `ALTER TABLE order_items ADD COLUMN unit_cost REAL DEFAULT 0;`,
       `ALTER TABLE order_items ADD COLUMN note TEXT;`,
-      `ALTER TABLE products ADD COLUMN cost_price REAL DEFAULT 0;`
+      `ALTER TABLE products ADD COLUMN cost_price REAL DEFAULT 0;`,
+      `CREATE INDEX IF NOT EXISTS idx_orders_status_created ON orders(status, created_at);`,
+      `CREATE INDEX IF NOT EXISTS idx_orders_table_status ON orders(table_id, status);`,
+      `CREATE INDEX IF NOT EXISTS idx_order_items_order_id ON order_items(order_id);`,
+      `CREATE INDEX IF NOT EXISTS idx_tables_area_id ON tables(area_id);`,
+      `CREATE INDEX IF NOT EXISTS idx_products_category_id ON products(category_id);`
     ];
 
     for (const alterQ of alterQueries) {

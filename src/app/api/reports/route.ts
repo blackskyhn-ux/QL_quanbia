@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/db';
 import { orders, orderItems, cashShifts } from '@/db/schema';
-import { inArray, desc } from 'drizzle-orm';
+import { inArray, desc, gte, lte, and } from 'drizzle-orm';
 import { getCurrentUser } from '@/lib/auth';
 import { ensureDbInitialized } from '@/db/init';
 
@@ -19,8 +19,6 @@ export async function GET(request: Request) {
     const period = searchParams.get('period') || 'today';
     const startDateParam = searchParams.get('startDate');
     const endDateParam = searchParams.get('endDate');
-
-    const allOrders = await db.select().from(orders).orderBy(desc(orders.createdAt));
 
     // Calculate dates in UTC+7 (Asia/Ho_Chi_Minh)
     const now = new Date();
@@ -50,29 +48,31 @@ export async function GET(request: Request) {
     const lastMonthEndStr = formatVnDate(lastMonthEndObj);
     const yearStartStr = `${vnDate.getFullYear()}-01-01`;
 
-    let filteredOrders = allOrders;
+    let dateCondition;
 
     if (period === 'today') {
-      filteredOrders = allOrders.filter((o) => o.createdAt && o.createdAt.startsWith(todayStr));
+      dateCondition = and(gte(orders.createdAt, todayStr), lte(orders.createdAt, `${todayStr}T23:59:59`));
     } else if (period === 'yesterday') {
-      filteredOrders = allOrders.filter((o) => o.createdAt && o.createdAt.startsWith(yesterdayStr));
+      dateCondition = and(gte(orders.createdAt, yesterdayStr), lte(orders.createdAt, `${yesterdayStr}T23:59:59`));
     } else if (period === '7days') {
-      filteredOrders = allOrders.filter((o) => o.createdAt && o.createdAt >= sevenDaysAgoStr);
+      dateCondition = gte(orders.createdAt, sevenDaysAgoStr);
     } else if (period === '30days') {
-      filteredOrders = allOrders.filter((o) => o.createdAt && o.createdAt >= thirtyDaysAgoStr);
+      dateCondition = gte(orders.createdAt, thirtyDaysAgoStr);
     } else if (period === 'month') {
-      filteredOrders = allOrders.filter((o) => o.createdAt && o.createdAt >= monthStartStr);
+      dateCondition = gte(orders.createdAt, monthStartStr);
     } else if (period === 'last_month') {
-      filteredOrders = allOrders.filter(
-        (o) => o.createdAt && o.createdAt >= lastMonthStartStr && o.createdAt <= `${lastMonthEndStr}T23:59:59`
-      );
+      dateCondition = and(gte(orders.createdAt, lastMonthStartStr), lte(orders.createdAt, `${lastMonthEndStr}T23:59:59`));
     } else if (period === 'year') {
-      filteredOrders = allOrders.filter((o) => o.createdAt && o.createdAt >= yearStartStr);
+      dateCondition = gte(orders.createdAt, yearStartStr);
     } else if (period === 'custom' && startDateParam && endDateParam) {
-      filteredOrders = allOrders.filter(
-        (o) => o.createdAt && o.createdAt >= startDateParam && o.createdAt <= `${endDateParam}T23:59:59`
-      );
+      dateCondition = and(gte(orders.createdAt, startDateParam), lte(orders.createdAt, `${endDateParam}T23:59:59`));
     }
+
+    const filteredOrders = await db
+      .select()
+      .from(orders)
+      .where(dateCondition)
+      .orderBy(desc(orders.createdAt));
 
     const completedOrders = filteredOrders.filter((o) => o.status === 'completed' && o.paymentStatus === 'paid');
     const cancelledOrders = filteredOrders.filter((o) => o.status === 'cancelled');
