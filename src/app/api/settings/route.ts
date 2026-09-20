@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { db } from '@/db';
 import { settings } from '@/db/schema';
 import { getCurrentUser } from '@/lib/auth';
+import { recordAuditLog } from '@/lib/audit';
 
 export const dynamic = 'force-dynamic';
 
@@ -22,10 +23,16 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
-    const user = await getCurrentUser();
+    const user = await getCurrentUser(req);
     if (!user || user.roleName !== 'admin') {
       return NextResponse.json({ success: false, error: 'Chỉ Admin mới có quyền cập nhật cấu hình' }, { status: 403 });
     }
+
+    const oldSettings = await db.select().from(settings);
+    const oldSettingsMap = oldSettings.reduce((acc, curr) => {
+      acc[curr.key] = curr.value || '';
+      return acc;
+    }, {} as Record<string, string>);
 
     const body = await req.json();
     
@@ -40,6 +47,16 @@ export async function POST(req: Request) {
           set: { value: value as string }
         });
     }
+
+    await recordAuditLog({
+      action: 'SETTING_UPDATED',
+      entityType: 'setting',
+      entityId: 1,
+      performedBy: user.id,
+      reason: 'Cập nhật cấu hình hệ thống quán bia (VietQR / Thông tin nhà hàng)',
+      oldValue: oldSettingsMap,
+      newValue: body,
+    });
 
     return NextResponse.json({ success: true });
   } catch (error) {

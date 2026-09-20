@@ -3,6 +3,7 @@ import { db } from '@/db';
 import { orders, tables, orderItems, products, inventoryLogs } from '@/db/schema';
 import { eq, and, sql } from 'drizzle-orm';
 import { getCurrentUser } from '@/lib/auth';
+import { recordAuditLog } from '@/lib/audit';
 
 export const dynamic = 'force-dynamic';
 
@@ -48,6 +49,27 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
           if (updatedOrders.length === 0) {
             throw new Error('Đơn hàng đã được thanh toán bởi một giao dịch khác');
           }
+
+          // Record PAYMENT_COMPLETED audit log
+          await recordAuditLog({
+            tx,
+            action: 'PAYMENT_COMPLETED',
+            entityType: 'order',
+            entityId: orderId,
+            performedBy: user?.id,
+            reason: `Thanh toán thành công đơn hàng #${order.orderNumber} qua ${paymentMethod || 'cash'}`,
+            oldValue: {
+              status: order.status,
+              paymentStatus: order.paymentStatus,
+              finalAmount: order.finalAmount,
+            },
+            newValue: {
+              status: 'completed',
+              paymentStatus: 'paid',
+              paymentMethod: paymentMethod || 'cash',
+              finalAmount: finalAmount !== undefined ? Number(finalAmount) : order.finalAmount,
+            },
+          });
 
           // Reset table status to available
           if (order.tableId) {

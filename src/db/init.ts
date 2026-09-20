@@ -193,7 +193,10 @@ export async function ensureDbInitialized() {
       `CREATE INDEX IF NOT EXISTS idx_orders_table_status ON orders(table_id, status);`,
       `CREATE INDEX IF NOT EXISTS idx_order_items_order_id ON order_items(order_id);`,
       `CREATE INDEX IF NOT EXISTS idx_tables_area_id ON tables(area_id);`,
-      `CREATE INDEX IF NOT EXISTS idx_products_category_id ON products(category_id);`
+      `CREATE INDEX IF NOT EXISTS idx_products_category_id ON products(category_id);`,
+      `CREATE INDEX IF NOT EXISTS idx_audit_logs_action_created ON audit_logs(action, created_at);`,
+      `CREATE INDEX IF NOT EXISTS idx_audit_logs_performed_by ON audit_logs(performed_by);`,
+      `CREATE INDEX IF NOT EXISTS idx_audit_logs_entity ON audit_logs(entity_type, entity_id);`
     ];
 
     for (const alterQ of alterQueries) {

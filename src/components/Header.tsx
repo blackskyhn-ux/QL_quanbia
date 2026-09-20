@@ -17,6 +17,7 @@ import {
   Menu,
   X,
   User,
+  ShieldCheck,
 } from 'lucide-react';
 
 interface UserData {
@@ -74,7 +75,14 @@ export default function Header() {
     { href: '/inventory', label: 'Kho Hàng', icon: Package },
   ];
 
-  if (user?.roleName === 'admin') {
+  const roleName = (user?.roleName || '').toLowerCase();
+  const isManagement = ['admin', 'manager', 'quanly', 'quản lý', 'quản trị'].includes(roleName);
+
+  if (isManagement) {
+    navItems.push({ href: '/audit-logs', label: 'Nhật Ký Thao Tác', icon: ShieldCheck });
+  }
+
+  if (roleName === 'admin') {
     navItems.push(
       { href: '/users', label: 'Nhân Sự', icon: UserCheck },
       { href: '/settings', label: 'Cài Đặt', icon: Settings }

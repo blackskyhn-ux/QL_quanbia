@@ -70,7 +70,8 @@ describe('Authentication Test Suite', () => {
   });
 
   it('logout removes session', async () => {
-    const res = await logoutRoute();
+    const req = new Request('http://localhost/api/auth/logout', { method: 'POST' });
+    const res = await logoutRoute(req);
     expect(res.status).toBe(200);
   });
 

@@ -3,6 +3,8 @@ import { db } from '@/db';
 import { products, categories } from '@/db/schema';
 import { eq, like, or, and, sql } from 'drizzle-orm';
 import { ensureDbInitialized } from '@/db/init';
+import { getCurrentUser } from '@/lib/auth';
+import { recordAuditLog } from '@/lib/audit';
 
 export const dynamic = 'force-dynamic';
 
@@ -52,6 +54,7 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
+    const user = await getCurrentUser(request);
     const body = await request.json();
     const { categoryId, name, code, price, costPrice, unit, stockQuantity, imageUrl, description } = body;
 
@@ -74,6 +77,15 @@ export async function POST(request: Request) {
       })
       .returning();
 
+    await recordAuditLog({
+      action: 'PRODUCT_CREATED',
+      entityType: 'product',
+      entityId: inserted[0].id,
+      performedBy: user?.id,
+      reason: `Thêm món ăn/sản phẩm mới: ${name} (${Number(price).toLocaleString('vi-VN')}đ)`,
+      newValue: inserted[0],
+    });
+
     return NextResponse.json({ success: true, data: inserted[0] });
   } catch (error: unknown) {
     return NextResponse.json({ success: false, error: (error as Error).message }, { status: 500 });
@@ -82,9 +94,13 @@ export async function POST(request: Request) {
 
 export async function PUT(request: Request) {
   try {
+    const user = await getCurrentUser(request);
     const body = await request.json();
     const { id, categoryId, name, price, costPrice, unit, stockQuantity, isAvailable, imageUrl } = body;
     if (!id) return NextResponse.json({ success: false, error: 'Thiếu ID sản phẩm' }, { status: 400 });
+
+    const oldProductList = await db.select().from(products).where(eq(products.id, Number(id)));
+    const oldProduct = oldProductList[0];
 
     const updated = await db
       .update(products)
@@ -101,6 +117,16 @@ export async function PUT(request: Request) {
       .where(eq(products.id, Number(id)))
       .returning();
 
+    await recordAuditLog({
+      action: 'PRODUCT_UPDATED',
+      entityType: 'product',
+      entityId: Number(id),
+      performedBy: user?.id,
+      reason: `Cập nhật món ăn/sản phẩm #${id}: ${name || oldProduct?.name}`,
+      oldValue: oldProduct,
+      newValue: updated[0],
+    });
+
     return NextResponse.json({ success: true, data: updated[0] });
   } catch (error: unknown) {
     return NextResponse.json({ success: false, error: (error as Error).message }, { status: 500 });
@@ -109,6 +135,7 @@ export async function PUT(request: Request) {
 
 export async function DELETE(request: Request) {
   try {
+    const user = await getCurrentUser(request);
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
 
@@ -116,11 +143,24 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ success: false, error: 'Thiếu ID sản phẩm' }, { status: 400 });
     }
 
+    const oldProductList = await db.select().from(products).where(eq(products.id, Number(id)));
+    const oldProduct = oldProductList[0];
+
     const updated = await db
       .update(products)
       .set({ isAvailable: false })
       .where(eq(products.id, Number(id)))
       .returning();
+
+    await recordAuditLog({
+      action: 'PRODUCT_DELETED',
+      entityType: 'product',
+      entityId: Number(id),
+      performedBy: user?.id,
+      reason: `Xóa/ngừng bán sản phẩm #${id}: ${oldProduct?.name}`,
+      oldValue: oldProduct,
+      newValue: { isAvailable: false },
+    });
 
     return NextResponse.json({ success: true, data: updated[0] });
   } catch (error: unknown) {

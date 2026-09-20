@@ -4,6 +4,7 @@ import { users, roles } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import bcrypt from 'bcryptjs';
 import { getCurrentUser } from '@/lib/auth';
+import { recordAuditLog } from '@/lib/audit';
 
 export const dynamic = 'force-dynamic';
 
@@ -62,6 +63,15 @@ export async function POST(request: Request) {
       roleId: Number(roleId)
     }).returning({ id: users.id, username: users.username, fullName: users.fullName });
 
+    await recordAuditLog({
+      action: 'USER_CREATED',
+      entityType: 'user',
+      entityId: inserted[0].id,
+      performedBy: adminUser.id,
+      reason: `Tạo tài khoản người dùng mới: ${fullName} (${username})`,
+      newValue: { username, fullName, roleId: Number(roleId), phone },
+    });
+
     return NextResponse.json({ success: true, data: inserted[0] });
   } catch (error: unknown) {
     return NextResponse.json({ success: false, error: (error as Error).message }, { status: 500 });
@@ -78,6 +88,9 @@ export async function PUT(request: Request) {
     const { id, fullName, phone, roleId, status, password } = await request.json();
     if (!id) return NextResponse.json({ success: false, error: 'Thiếu ID' }, { status: 400 });
 
+    const oldUserList = await db.select().from(users).where(eq(users.id, Number(id)));
+    const oldUser = oldUserList[0];
+
     const updateData: Record<string, string | number> = {};
     if (fullName) updateData.fullName = fullName;
     if (phone !== undefined) updateData.phone = phone;
@@ -90,6 +103,16 @@ export async function PUT(request: Request) {
     updateData.updatedAt = new Date().toISOString();
 
     const updated = await db.update(users).set(updateData).where(eq(users.id, Number(id))).returning({ id: users.id });
+
+    await recordAuditLog({
+      action: 'USER_UPDATED',
+      entityType: 'user',
+      entityId: Number(id),
+      performedBy: adminUser.id,
+      reason: `Cập nhật tài khoản người dùng #${id} (${oldUser?.username})`,
+      oldValue: { fullName: oldUser?.fullName, roleId: oldUser?.roleId, status: oldUser?.status },
+      newValue: { fullName, roleId, status, passwordChanged: Boolean(password) },
+    });
 
     return NextResponse.json({ success: true, data: updated[0] });
   } catch (error: unknown) {

@@ -3,6 +3,7 @@ import { db } from '@/db';
 import { orders, orderItems, tables, products } from '@/db/schema';
 import { eq, desc, and, inArray, sql } from 'drizzle-orm';
 import { getCurrentUser } from '@/lib/auth';
+import { recordAuditLog } from '@/lib/audit';
 
 export const dynamic = 'force-dynamic';
 
@@ -131,6 +132,10 @@ export async function POST(request: Request) {
             // Update existing order
             orderId = activeOrders[0].id;
             orderNumber = activeOrders[0].orderNumber;
+            const existingOrder = activeOrders[0];
+
+            // Fetch existing order items before deletion to detect cancelled/reduced items
+            const oldItems = await tx.select().from(orderItems).where(eq(orderItems.orderId, orderId));
 
             // ATOMIC OPTIMISTIC LOCKING VIA DATABASE WHERE CONDITION
             const clientVersion = body.version !== undefined && body.version !== null ? Number(body.version) : undefined;
@@ -166,6 +171,56 @@ export async function POST(request: Request) {
 
             // Clear previous items and rewrite
             await tx.delete(orderItems).where(eq(orderItems.orderId, orderId));
+
+            // Detect reduced/cancelled items
+            const cancelledOrReducedItems: any[] = [];
+            for (const oldItem of oldItems) {
+              const newItem = validatedItems.find((vi: any) => vi.productId === oldItem.productId);
+              if (!newItem) {
+                cancelledOrReducedItems.push({
+                  productId: oldItem.productId,
+                  productName: oldItem.productName,
+                  oldQty: oldItem.quantity,
+                  newQty: 0,
+                  removedQty: oldItem.quantity,
+                });
+              } else if (newItem.quantity < oldItem.quantity) {
+                cancelledOrReducedItems.push({
+                  productId: oldItem.productId,
+                  productName: oldItem.productName,
+                  oldQty: oldItem.quantity,
+                  newQty: newItem.quantity,
+                  removedQty: oldItem.quantity - newItem.quantity,
+                });
+              }
+            }
+
+            if (cancelledOrReducedItems.length > 0) {
+              await recordAuditLog({
+                tx,
+                action: 'ITEM_CANCELLED',
+                entityType: 'order',
+                entityId: orderId,
+                performedBy: user?.id,
+                reason: `Hủy / bớt món khỏi đơn hàng #${orderNumber} đang phục vụ`,
+                oldValue: { items: oldItems.map((i) => ({ name: i.productName, qty: i.quantity })) },
+                newValue: { cancelledItems: cancelledOrReducedItems },
+              });
+            }
+
+            // Detect discount changes
+            if (Number(discountPercent || 0) !== Number(existingOrder.discountPercent || 0) || calculatedDiscount !== existingOrder.discountAmount) {
+              await recordAuditLog({
+                tx,
+                action: 'DISCOUNT_APPLIED',
+                entityType: 'order',
+                entityId: orderId,
+                performedBy: user?.id,
+                reason: `Áp dụng giảm giá ${discountPercent || 0}% (${calculatedDiscount.toLocaleString('vi-VN')}đ) cho đơn #${orderNumber}`,
+                oldValue: { discountPercent: existingOrder.discountPercent, discountAmount: existingOrder.discountAmount },
+                newValue: { discountPercent: Number(discountPercent || 0), discountAmount: calculatedDiscount },
+              });
+            }
           } else {
             // Create new order
             orderNumber = `HD-${Date.now().toString().slice(-8)}`;
@@ -200,6 +255,16 @@ export async function POST(request: Request) {
                 updatedAt: new Date().toISOString(),
               })
               .where(eq(tables.id, Number(tableId)));
+
+            await recordAuditLog({
+              tx,
+              action: 'ORDER_CREATED',
+              entityType: 'order',
+              entityId: orderId,
+              performedBy: user?.id,
+              reason: `Mở bàn #${tableId} - Tạo mới đơn hàng #${orderNumber}`,
+              newValue: { orderNumber, tableId: Number(tableId), totalAmount, finalAmount },
+            });
           }
 
           // Insert order items

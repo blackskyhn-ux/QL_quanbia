@@ -3,6 +3,7 @@ import { db } from '@/db';
 import { orders, orderItems, tables } from '@/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { getCurrentUser } from '@/lib/auth';
+import { recordAuditLog } from '@/lib/audit';
 
 export const dynamic = 'force-dynamic';
 
@@ -66,6 +67,16 @@ export async function POST(request: Request) {
           updatedAt: new Date().toISOString(),
         })
         .where(eq(tables.id, Number(toTableId)));
+
+      await recordAuditLog({
+        action: 'TABLE_MOVED',
+        entityType: 'table',
+        entityId: Number(fromTableId),
+        performedBy: user.id,
+        reason: `Chuyển đơn hàng #${sourceOrder.orderNumber} từ bàn #${fromTableId} sang bàn #${toTableId}`,
+        oldValue: { tableId: Number(fromTableId) },
+        newValue: { tableId: Number(toTableId), orderId: sourceOrder.id },
+      });
 
       return NextResponse.json({
         success: true,
@@ -134,6 +145,16 @@ export async function POST(request: Request) {
           updatedAt: new Date().toISOString(),
         })
         .where(eq(tables.id, Number(fromTableId)));
+
+      await recordAuditLog({
+        action: 'TABLE_MERGED',
+        entityType: 'table',
+        entityId: Number(toTableId),
+        performedBy: user.id,
+        reason: `Gộp đơn hàng #${sourceOrder.orderNumber} (bàn #${fromTableId}) vào đơn #${targetOrder.orderNumber} (bàn #${toTableId})`,
+        oldValue: { sourceOrderId: sourceOrder.id, sourceTableId: Number(fromTableId), totalAmount: sourceOrder.totalAmount },
+        newValue: { targetOrderId: targetOrder.id, targetTableId: Number(toTableId), newTotalAmount: newTotal },
+      });
 
       return NextResponse.json({
         success: true,
