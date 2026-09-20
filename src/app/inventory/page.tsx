@@ -137,15 +137,18 @@ export default function InventoryPage() {
     fetchCategories();
   }, []);
 
-  // Lock body scroll when any modal is open
+  // Lock body & html scroll when any modal is open
   useEffect(() => {
     if (importModalProduct || adjustModalProduct || settingsModalProduct) {
       document.body.style.overflow = 'hidden';
+      document.documentElement.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
     }
     return () => {
       document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
     };
   }, [importModalProduct, adjustModalProduct, settingsModalProduct]);
 
@@ -693,8 +696,8 @@ export default function InventoryPage() {
 
       {/* ================= MODAL NHẬP KHO ================= */}
       {importModalProduct && (
-        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
-          <div className="glass-card w-full max-w-md rounded-2xl border border-slate-800 p-5 space-y-4 shadow-2xl max-h-[90vh] flex flex-col my-auto">
+        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 overflow-hidden">
+          <div className="glass-card w-full max-w-md rounded-2xl border border-slate-800 p-5 space-y-4 shadow-2xl max-h-[90vh] flex flex-col">
             <div className="flex items-center justify-between border-b border-slate-800 pb-3 flex-shrink-0">
               <div>
                 <h3 className="text-base font-extrabold text-white flex items-center gap-2">
@@ -769,8 +772,8 @@ export default function InventoryPage() {
 
       {/* ================= MODAL ĐIỀU CHỈNH KHO / KIỂM KÊ ================= */}
       {adjustModalProduct && (
-        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
-          <div className="glass-card w-full max-w-md rounded-2xl border border-slate-800 p-5 space-y-4 shadow-2xl max-h-[90vh] flex flex-col my-auto">
+        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 overflow-hidden">
+          <div className="glass-card w-full max-w-md rounded-2xl border border-slate-800 p-5 space-y-4 shadow-2xl max-h-[90vh] flex flex-col">
             <div className="flex items-center justify-between border-b border-slate-800 pb-3 flex-shrink-0">
               <div>
                 <h3 className="text-base font-extrabold text-white flex items-center gap-2">
@@ -855,8 +858,8 @@ export default function InventoryPage() {
 
       {/* ================= MODAL CẤU HÌNH NGƯỠNG & GIÁ VỐN ================= */}
       {settingsModalProduct && (
-        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
-          <div className="glass-card w-full max-w-md rounded-2xl border border-slate-800 p-5 space-y-4 shadow-2xl max-h-[90vh] flex flex-col my-auto">
+        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 overflow-hidden">
+          <div className="glass-card w-full max-w-md rounded-2xl border border-slate-800 p-5 space-y-4 shadow-2xl max-h-[90vh] flex flex-col">
             <div className="flex items-center justify-between border-b border-slate-800 pb-3 flex-shrink-0">
               <div>
                 <h3 className="text-base font-extrabold text-white flex items-center gap-2">
