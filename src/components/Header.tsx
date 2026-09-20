@@ -19,8 +19,6 @@ import {
   User,
 } from 'lucide-react';
 
-import ShiftModal from '@/components/ShiftModal';
-
 interface UserData {
   id: number;
   username: string;
@@ -35,7 +33,6 @@ export default function Header() {
   const [user, setUser] = useState<UserData | null>(null);
   const [time, setTime] = useState<string>('');
   const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
-  const [shiftModalOpen, setShiftModalOpen] = useState<boolean>(false);
 
   useEffect(() => {
     // Clock
@@ -149,15 +146,6 @@ export default function Header() {
 
         {/* Right Action Tools & Profile */}
         <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-          {/* Shift Management Button */}
-          <button
-            onClick={() => setShiftModalOpen(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-400 text-xs font-semibold transition-all"
-            title="Quản Lý Ca Làm Việc"
-          >
-            <Clock className="w-3.5 h-3.5 text-amber-400" />
-            <span>Mở / Chốt Ca</span>
-          </button>
 
           {/* Realtime Clock */}
           <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 text-xs font-mono">
@@ -239,8 +227,6 @@ export default function Header() {
           </div>
         </div>
       )}
-
-      <ShiftModal isOpen={shiftModalOpen} onClose={() => setShiftModalOpen(false)} />
     </header>
   );
 }
