@@ -697,12 +697,12 @@ export default function PosPage() {
               </div>
 
               {/* Product Grid */}
-              <div className="flex-1 bg-slate-900/50 border border-slate-800/80 rounded-2xl p-3 overflow-y-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+              <div className="flex-1 bg-slate-900/50 border border-slate-800/80 rounded-2xl p-3 overflow-y-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 content-start">
                 {filteredProducts.map((product) => (
                   <div
                     key={product.id}
                     onClick={() => handleAddToCart(product)}
-                    className="bg-slate-900 border border-slate-800 hover:border-amber-500/60 rounded-xl p-3 cursor-pointer transition-all duration-200 hover:scale-[1.02] flex flex-col justify-between group shadow-md"
+                    className="bg-slate-900 border border-slate-800 hover:border-amber-500/60 rounded-xl p-3 cursor-pointer transition-all duration-200 hover:scale-[1.02] flex flex-col justify-between group shadow-md h-fit"
                   >
                     <div className="space-y-2">
                       <div className="aspect-video w-full rounded-lg bg-slate-800 overflow-hidden relative">

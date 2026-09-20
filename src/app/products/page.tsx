@@ -247,14 +247,14 @@ export default function ProductsPage() {
         </div>
 
         {/* Product Cards Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 content-start">
           {filtered.map((product) => {
             const isInactive = product.isAvailable === false;
 
             return (
               <div
                 key={product.id}
-                className={`bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col justify-between space-y-3 transition-all group ${
+                className={`bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col justify-between space-y-3 transition-all group h-fit ${
                   isInactive ? 'opacity-60 grayscale hover:grayscale-0 hover:opacity-100' : 'hover:border-amber-500/40'
                 }`}
               >
