@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { ClipboardList, Search, Eye, Banknote, QrCode, XCircle, RotateCcw, ShieldAlert, AlertTriangle } from 'lucide-react';
+import { ClipboardList, Search, Eye, Banknote, QrCode, XCircle, RotateCcw, ShieldAlert, AlertTriangle, Printer } from 'lucide-react';
 import { formatVND, formatDate } from '@/lib/utils';
 
 interface OrderItem {
@@ -42,7 +42,9 @@ export default function OrdersPage() {
   const [statusFilter, setStatusFilter] = useState<'all' | 'serving' | 'completed' | 'cancelled'>('all');
   const [search, setSearch] = useState('');
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
-  
+  const [printOrder, setPrintOrder] = useState<Order | null>(null);
+  const [shopSettings, setShopSettings] = useState<{ shop_name?: string; shop_address?: string; shop_phone?: string }>({});
+
   // Modal states for Cancel / Refund
   const [actionModalType, setActionModalType] = useState<'cancel' | 'refund' | null>(null);
   const [reason, setReason] = useState('');
@@ -66,6 +68,14 @@ export default function OrdersPage() {
 
   useEffect(() => {
     fetchOrders();
+    fetch('/api/settings')
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.success && data.settings) {
+          setShopSettings(data.settings);
+        }
+      })
+      .catch(() => {});
   }, [statusFilter]);
 
   const handleCancelOrder = async () => {
@@ -298,13 +308,22 @@ export default function OrdersPage() {
                       </td>
                       <td className="p-4 text-slate-400 text-[11px] font-mono">{formatDate(order.createdAt)}</td>
                       <td className="p-4 text-center">
-                        <button
-                          onClick={() => setSelectedOrder(order)}
-                          className="p-2 bg-slate-800 hover:bg-slate-700 text-amber-400 rounded-xl transition-all"
-                          title="Xem chi tiết đơn"
-                        >
-                          <Eye className="w-4 h-4" />
-                        </button>
+                        <div className="flex items-center justify-center gap-1.5">
+                          <button
+                            onClick={() => setSelectedOrder(order)}
+                            className="p-2 bg-slate-800 hover:bg-slate-700 text-amber-400 rounded-xl transition-all"
+                            title="Xem chi tiết đơn"
+                          >
+                            <Eye className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => setPrintOrder(order)}
+                            className="p-2 bg-slate-800 hover:bg-slate-700 text-sky-400 rounded-xl transition-all"
+                            title="In hóa đơn"
+                          >
+                            <Printer className="w-4 h-4" />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))
@@ -444,6 +463,13 @@ export default function OrdersPage() {
             ) : (
               /* Action buttons */
               <div className="flex items-center gap-2 pt-2 border-t border-slate-800">
+                <button
+                  onClick={() => setPrintOrder(selectedOrder)}
+                  className="flex-1 py-2.5 bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 border border-sky-500/30 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all"
+                >
+                  <Printer className="w-4 h-4" /> In Hóa Đơn
+                </button>
+
                 {selectedOrder.status !== 'cancelled' && selectedOrder.paymentStatus !== 'refunded' && (
                   <button
                     onClick={() => setActionModalType('cancel')}
@@ -470,6 +496,100 @@ export default function OrdersPage() {
                 </button>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Printable Invoice Modal */}
+      {printOrder && (
+        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-sm w-full space-y-4 shadow-2xl">
+            <div id="printable-receipt" className="bg-white text-slate-900 p-5 rounded-xl space-y-3 text-xs font-mono">
+              <div className="text-center border-b border-dashed border-slate-400 pb-3 space-y-1">
+                <h2 className="text-base font-black uppercase text-slate-900">
+                  {shopSettings.shop_name || 'BIA CLUB POS'}
+                </h2>
+                {shopSettings.shop_address && (
+                  <p className="text-[10px] text-slate-600">{shopSettings.shop_address}</p>
+                )}
+                {shopSettings.shop_phone && (
+                  <p className="text-[10px] text-slate-600">ĐT: {shopSettings.shop_phone}</p>
+                )}
+                <div className="pt-2 text-[11px] font-bold text-slate-800">HÓA ĐƠN BÁN HÀNG</div>
+                <div className="text-[10px] text-slate-500">Mã HĐ: #{printOrder.orderNumber}</div>
+              </div>
+
+              <div className="space-y-1 text-[11px] border-b border-dashed border-slate-400 pb-2">
+                <div className="flex justify-between">
+                  <span>Bàn: <strong className="text-slate-900">{printOrder.table?.name || `Bàn #${printOrder.tableId}`}</strong></span>
+                  <span>Khách: <strong>{printOrder.customerCount || 1}</strong></span>
+                </div>
+                <div className="flex justify-between text-[10px] text-slate-500">
+                  <span>Ngày: {formatDate(printOrder.createdAt)}</span>
+                </div>
+                <div className="flex justify-between text-[10px] text-slate-500">
+                  <span>Thanh toán: <strong>{printOrder.paymentMethod === 'transfer' ? 'VietQR' : 'Tiền mặt'}</strong></span>
+                </div>
+              </div>
+
+              {/* Items */}
+              <div className="space-y-1.5 border-b border-dashed border-slate-400 pb-3">
+                <div className="grid grid-cols-12 font-bold text-slate-700">
+                  <span className="col-span-6">Tên món</span>
+                  <span className="col-span-2 text-center">SL</span>
+                  <span className="col-span-4 text-right">Thành tiền</span>
+                </div>
+                {printOrder.items && printOrder.items.length > 0 ? (
+                  printOrder.items.map((item, idx: number) => (
+                    <div key={idx} className="grid grid-cols-12 text-slate-800">
+                      <span className="col-span-6 truncate">{item.productName}</span>
+                      <span className="col-span-2 text-center">{item.quantity}</span>
+                      <span className="col-span-4 text-right">{formatVND(item.amount)}</span>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-center text-slate-400 py-1">Không có chi tiết món</div>
+                )}
+              </div>
+
+              {/* Totals */}
+              <div className="space-y-1 font-bold pt-1">
+                <div className="flex justify-between text-xs text-slate-600">
+                  <span>Tạm tính:</span>
+                  <span>{formatVND(printOrder.totalAmount)}</span>
+                </div>
+                {printOrder.discountAmount > 0 && (
+                  <div className="flex justify-between text-xs text-rose-600">
+                    <span>Giảm giá:</span>
+                    <span>-{formatVND(printOrder.discountAmount)}</span>
+                  </div>
+                )}
+                <div className="flex justify-between text-sm pt-1 border-t border-slate-400 text-slate-900 font-extrabold">
+                  <span>TỔNG CỘNG:</span>
+                  <span>{formatVND(printOrder.finalAmount)}</span>
+                </div>
+              </div>
+
+              <div className="text-center pt-3 border-t border-dashed border-slate-400 space-y-0.5 text-[10px] text-slate-500">
+                <p className="font-semibold text-slate-700">Cảm ơn Quý khách & Hẹn gặp lại!</p>
+                <p className="text-[9px] text-slate-400">Powered by Bia Club POS</p>
+              </div>
+            </div>
+
+            <div className="flex gap-2">
+              <button
+                onClick={() => window.print()}
+                className="flex-1 py-2.5 bg-amber-500 hover:bg-amber-600 text-slate-950 rounded-xl font-bold flex items-center justify-center gap-1.5 transition-all shadow-lg shadow-amber-500/20 text-xs"
+              >
+                <Printer className="w-4 h-4" /> In Hóa Đơn
+              </button>
+              <button
+                onClick={() => setPrintOrder(null)}
+                className="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl font-bold text-xs"
+              >
+                Đóng
+              </button>
+            </div>
           </div>
         </div>
       )}
