@@ -8,7 +8,10 @@ export const dynamic = 'force-dynamic';
 
 export async function POST(request: Request) {
   try {
-    await getCurrentUser();
+    const user = await getCurrentUser(request);
+    if (!user) {
+      return NextResponse.json({ success: false, error: 'Chưa đăng nhập' }, { status: 401 });
+    }
     const body = await request.json();
     const { fromTableId, toTableId } = body;
 

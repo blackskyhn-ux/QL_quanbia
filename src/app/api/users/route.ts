@@ -70,7 +70,7 @@ export async function POST(request: Request) {
 
 export async function PUT(request: Request) {
   try {
-    const adminUser = await getCurrentUser();
+    const adminUser = await getCurrentUser(request);
     if (!adminUser || adminUser.roleName !== 'admin') {
        return NextResponse.json({ success: false, error: 'Không có quyền' }, { status: 403 });
     }
