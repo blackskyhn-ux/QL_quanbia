@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import {
   Package,
   AlertTriangle,
@@ -132,7 +133,10 @@ export default function InventoryPage() {
     }
   };
 
+  const [mounted, setMounted] = useState(false);
+
   useEffect(() => {
+    setMounted(true);
     fetchInventoryData();
     fetchCategories();
   }, []);
@@ -695,8 +699,8 @@ export default function InventoryPage() {
       )}
 
       {/* ================= MODAL NHẬP KHO ================= */}
-      {importModalProduct && (
-        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 overflow-hidden">
+      {mounted && importModalProduct && createPortal(
+        <div className="fixed inset-0 z-[9999] bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 overflow-hidden">
           <div className="glass-card w-full max-w-md rounded-2xl border border-slate-800 p-5 space-y-4 shadow-2xl max-h-[90vh] flex flex-col">
             <div className="flex items-center justify-between border-b border-slate-800 pb-3 flex-shrink-0">
               <div>
@@ -767,12 +771,13 @@ export default function InventoryPage() {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* ================= MODAL ĐIỀU CHỈNH KHO / KIỂM KÊ ================= */}
-      {adjustModalProduct && (
-        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 overflow-hidden">
+      {mounted && adjustModalProduct && createPortal(
+        <div className="fixed inset-0 z-[9999] bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 overflow-hidden">
           <div className="glass-card w-full max-w-md rounded-2xl border border-slate-800 p-5 space-y-4 shadow-2xl max-h-[90vh] flex flex-col">
             <div className="flex items-center justify-between border-b border-slate-800 pb-3 flex-shrink-0">
               <div>
@@ -853,12 +858,13 @@ export default function InventoryPage() {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* ================= MODAL CẤU HÌNH NGƯỠNG & GIÁ VỐN ================= */}
-      {settingsModalProduct && (
-        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 overflow-hidden">
+      {mounted && settingsModalProduct && createPortal(
+        <div className="fixed inset-0 z-[9999] bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 overflow-hidden">
           <div className="glass-card w-full max-w-md rounded-2xl border border-slate-800 p-5 space-y-4 shadow-2xl max-h-[90vh] flex flex-col">
             <div className="flex items-center justify-between border-b border-slate-800 pb-3 flex-shrink-0">
               <div>
@@ -921,7 +927,8 @@ export default function InventoryPage() {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </main>
   );
