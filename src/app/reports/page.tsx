@@ -197,8 +197,30 @@ export default function ReportsPage() {
         </div>
 
         {loading ? (
-          <div className="p-12 text-center text-slate-500 flex items-center justify-center gap-2">
-            <RefreshCw className="w-5 h-5 animate-spin text-amber-400" /> Đang tải dữ liệu báo cáo...
+          <div className="space-y-6 animate-pulse">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-3 h-28">
+                  <div className="h-3 w-28 bg-slate-800/80 rounded"></div>
+                  <div className="h-7 w-36 bg-slate-800/80 rounded"></div>
+                  <div className="h-3 w-24 bg-slate-800/80 rounded"></div>
+                </div>
+              ))}
+            </div>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-2 bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4 h-80">
+                <div className="h-5 w-48 bg-slate-800/80 rounded"></div>
+                <div className="h-60 w-full bg-slate-800/40 rounded-xl"></div>
+              </div>
+              <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4 h-80">
+                <div className="h-5 w-36 bg-slate-800/80 rounded"></div>
+                <div className="space-y-3">
+                  {Array.from({ length: 5 }).map((_, idx) => (
+                    <div key={idx} className="h-10 w-full bg-slate-800/40 rounded-lg"></div>
+                  ))}
+                </div>
+              </div>
+            </div>
           </div>
         ) : error ? (
           <div className="p-8 bg-rose-950/40 border border-rose-800/60 text-rose-300 rounded-2xl text-center space-y-3">

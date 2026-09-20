@@ -44,6 +44,7 @@ export default function OrdersPage() {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [printOrder, setPrintOrder] = useState<Order | null>(null);
   const [shopSettings, setShopSettings] = useState<{ shop_name?: string; shop_address?: string; shop_phone?: string }>({});
+  const [loading, setLoading] = useState(true);
 
   // Modal states for Cancel / Refund
   const [actionModalType, setActionModalType] = useState<'cancel' | 'refund' | null>(null);
@@ -54,6 +55,7 @@ export default function OrdersPage() {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const fetchOrders = async () => {
+    setLoading(true);
     try {
       const url = statusFilter !== 'all' ? `/api/orders?status=${statusFilter}&limit=100` : '/api/orders?limit=100';
       const res = await fetch(url);
@@ -63,6 +65,8 @@ export default function OrdersPage() {
       }
     } catch (err) {
       console.error(err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -262,7 +266,21 @@ export default function OrdersPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800/60">
-                {filteredOrders.length === 0 ? (
+                {loading ? (
+                  Array.from({ length: 6 }).map((_, idx) => (
+                    <tr key={idx} className="animate-pulse border-b border-slate-800/40">
+                      <td className="p-4"><div className="h-4 w-20 bg-slate-800/80 rounded-lg"></div></td>
+                      <td className="p-4"><div className="h-4 w-16 bg-slate-800/80 rounded-lg"></div></td>
+                      <td className="p-4"><div className="h-4 w-20 bg-slate-800/80 rounded-lg"></div></td>
+                      <td className="p-4"><div className="h-4 w-16 bg-slate-800/80 rounded-lg"></div></td>
+                      <td className="p-4"><div className="h-4 w-24 bg-slate-800/80 rounded-lg"></div></td>
+                      <td className="p-4"><div className="h-4 w-20 bg-slate-800/80 rounded-lg"></div></td>
+                      <td className="p-4"><div className="h-4 w-24 bg-slate-800/80 rounded-lg"></div></td>
+                      <td className="p-4"><div className="h-4 w-28 bg-slate-800/80 rounded-lg"></div></td>
+                      <td className="p-4 text-center"><div className="h-7 w-16 bg-slate-800/80 rounded-xl mx-auto"></div></td>
+                    </tr>
+                  ))
+                ) : filteredOrders.length === 0 ? (
                   <tr>
                     <td colSpan={9} className="p-8 text-center text-slate-500">
                       Không tìm thấy đơn hàng nào.

@@ -43,6 +43,7 @@ export default function ProductsPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [search, setSearch] = useState('');
   const [selectedCat, setSelectedCat] = useState<number | 'all'>('all');
+  const [loading, setLoading] = useState(true);
   
   const [showAddModal, setShowAddModal] = useState(false);
   const [editId, setEditId] = useState<number | null>(null);
@@ -57,6 +58,7 @@ export default function ProductsPage() {
   const [imageUrl, setImageUrl] = useState('');
 
   const loadData = async () => {
+    setLoading(true);
     try {
       const [resP, resC] = await Promise.all([
         fetch('/api/products').then((r) => r.json()),
@@ -70,6 +72,8 @@ export default function ProductsPage() {
       }
     } catch (err) {
       console.error(err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -248,7 +252,24 @@ export default function ProductsPage() {
 
         {/* Product Cards Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 content-start">
-          {filtered.map((product) => {
+          {loading ? (
+            Array.from({ length: 10 }).map((_, idx) => (
+              <div key={idx} className="bg-slate-900 border border-slate-800/80 rounded-2xl p-4 space-y-3 animate-pulse h-60 flex flex-col justify-between">
+                <div className="aspect-video w-full rounded-xl bg-slate-800/80"></div>
+                <div className="space-y-2">
+                  <div className="h-3 w-16 bg-slate-800/80 rounded"></div>
+                  <div className="h-4 w-32 bg-slate-800/80 rounded"></div>
+                  <div className="h-4 w-20 bg-slate-800/80 rounded"></div>
+                </div>
+                <div className="h-8 w-full bg-slate-800/80 rounded-xl"></div>
+              </div>
+            ))
+          ) : filtered.length === 0 ? (
+            <div className="col-span-full py-12 text-center text-slate-500 font-medium">
+              Không tìm thấy món ăn nào phù hợp.
+            </div>
+          ) : (
+            filtered.map((product) => {
             const isInactive = product.isAvailable === false;
 
             return (
@@ -330,7 +351,7 @@ export default function ProductsPage() {
                 </div>
               </div>
             );
-          })}
+          }))}
         </div>
       </main>
 

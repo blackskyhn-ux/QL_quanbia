@@ -43,6 +43,7 @@ export default function TablesPage() {
 
   const [areas, setAreas] = useState<Area[]>([]);
   const [selectedAreaId, setSelectedAreaId] = useState<number | 'all'>('all');
+  const [loading, setLoading] = useState(true);
   
   // Admin Editing Mode
   const [isAdmin, setIsAdmin] = useState(false);
@@ -55,6 +56,7 @@ export default function TablesPage() {
   const [editingTableInfo, setEditingTableInfo] = useState<{ id?: number, areaId: number, name: string, seats: number }>({ areaId: 0, name: '', seats: 4 });
 
   const loadAreas = async () => {
+    setLoading(true);
     try {
       const res = await fetch('/api/areas');
       const data = await res.json();
@@ -66,6 +68,8 @@ export default function TablesPage() {
       }
     } catch (err) {
       console.error(err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -226,9 +230,23 @@ export default function TablesPage() {
 
         {/* Area & Tables List */}
         <div className="space-y-8">
-          {areas
-            .filter((a) => selectedAreaId === 'all' || a.id === selectedAreaId)
-            .map((area) => (
+          {loading ? (
+            <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 space-y-4 animate-pulse">
+              <div className="h-6 w-36 bg-slate-800/80 rounded-lg"></div>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                {Array.from({ length: 12 }).map((_, idx) => (
+                  <div key={idx} className="h-36 rounded-2xl bg-slate-800/80 border border-slate-800"></div>
+                ))}
+              </div>
+            </div>
+          ) : areas.length === 0 ? (
+            <div className="py-12 text-center text-slate-500 font-medium">
+              Chưa tạo khu vực hoặc bàn ăn nào.
+            </div>
+          ) : (
+            areas
+              .filter((a) => selectedAreaId === 'all' || a.id === selectedAreaId)
+              .map((area) => (
               <div key={area.id} className="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 space-y-4 shadow-xl">
                 <div className="flex items-center justify-between border-b border-slate-800/80 pb-3">
                   <h2 className="text-base font-extrabold text-amber-400 flex items-center gap-2">
@@ -329,7 +347,7 @@ export default function TablesPage() {
                   })}
                 </div>
               </div>
-            ))}
+            )))}
         </div>
       </main>
 
