@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Header from '@/components/Header';
 import {
   BarChart3,
   TrendingUp,
@@ -123,10 +122,7 @@ export default function ReportsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#090d16] text-slate-100 flex flex-col font-sans">
-      <Header />
-
-      <main className="flex-1 max-w-[1920px] w-full mx-auto p-4 sm:p-6 space-y-6">
+    <main className="flex-1 max-w-[1920px] w-full mx-auto p-4 sm:p-6 space-y-6">
         {/* Top Control Bar */}
         <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 bg-slate-900 border border-slate-800 p-5 rounded-2xl shadow-xl">
           <div>
@@ -372,6 +368,5 @@ export default function ReportsPage() {
           </>
         )}
       </main>
-    </div>
   );
 }

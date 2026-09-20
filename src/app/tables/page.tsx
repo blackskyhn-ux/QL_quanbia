@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Header from '@/components/Header';
 import { LayoutGrid, Plus, Users, Edit2, Trash2, ShieldCog, Save } from 'lucide-react';
 import { formatVND } from '@/lib/utils';
 import Link from 'next/link';
@@ -149,9 +148,7 @@ export default function TablesPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#090d16] text-slate-100 flex flex-col font-sans">
-      <Header />
-
+    <>
       <main className="flex-1 max-w-[1920px] w-full mx-auto p-4 sm:p-6 space-y-6">
         {/* Header Stats Bar */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-slate-900 border border-slate-800 p-5 rounded-2xl shadow-xl">
@@ -392,6 +389,6 @@ export default function TablesPage() {
 
       {/* Toast Notification Container */}
       <ToastContainer toasts={toasts} onClose={removeToast} />
-    </div>
+    </>
   );
 }

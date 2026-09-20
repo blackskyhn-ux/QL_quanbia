@@ -100,7 +100,7 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="min-h-[calc(100vh-64px)] bg-slate-950 text-slate-200">
+    <div className="flex-1 w-full bg-slate-950 text-slate-200">
       <div className="max-w-5xl mx-auto px-4 py-8">
         
         {/* Header section */}

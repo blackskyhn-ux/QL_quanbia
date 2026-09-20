@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Header from '@/components/Header';
 import { UserCheck, Edit2, ShieldAlert, CheckCircle2, ShieldOff, Plus, Save } from 'lucide-react';
 
 import ToastContainer, { ToastMessage } from '@/components/Toast';
@@ -133,9 +132,7 @@ export default function UsersPage() {
   if (loading) return <div className="min-h-screen bg-[#090d16] text-white flex items-center justify-center">Đang tải...</div>;
 
   return (
-    <div className="min-h-screen bg-[#090d16] text-slate-100 flex flex-col font-sans">
-      <Header />
-
+    <>
       <main className="flex-1 max-w-[1920px] w-full mx-auto p-4 sm:p-6 space-y-6">
         <div className="flex items-center justify-between bg-slate-900 border border-slate-800 p-5 rounded-2xl shadow-xl">
           <div>
@@ -249,6 +246,6 @@ export default function UsersPage() {
 
       {/* Toast Notification Container */}
       <ToastContainer toasts={toasts} onClose={removeToast} />
-    </div>
+    </>
   );
 }

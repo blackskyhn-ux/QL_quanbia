@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Header from '@/components/Header';
 import { Package, AlertTriangle, Beer, CheckCircle2, Search } from 'lucide-react';
 // import { formatVND } from '@/lib/utils';
 
@@ -40,10 +39,7 @@ export default function InventoryPage() {
   );
 
   return (
-    <div className="min-h-screen bg-[#090d16] text-slate-100 flex flex-col font-sans">
-      <Header />
-
-      <main className="flex-1 max-w-[1920px] w-full mx-auto p-4 sm:p-6 space-y-6">
+    <main className="flex-1 max-w-[1920px] w-full mx-auto p-4 sm:p-6 space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-slate-900 border border-slate-800 p-5 rounded-2xl shadow-xl">
           <div>
@@ -119,6 +115,5 @@ export default function InventoryPage() {
           </div>
         </div>
       </main>
-    </div>
   );
 }

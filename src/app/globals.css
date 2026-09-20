@@ -34,11 +34,34 @@
   }
 }
 
+html {
+  scrollbar-gutter: stable;
+  overflow-y: scroll;
+  background-color: #090d16;
+}
+
 body {
-  background-color: #0b0f19;
+  background-color: #090d16;
   color: #f3f4f6;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
   overflow-x: hidden;
+  min-height: 100vh;
+}
+
+/* Page Transition Animation */
+@keyframes pageFadeIn {
+  from {
+    opacity: 0.92;
+    transform: translateY(1px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.page-transition {
+  animation: pageFadeIn 0.15s ease-out forwards;
 }
 
 /* Hide scrollbar for clean UI pills */

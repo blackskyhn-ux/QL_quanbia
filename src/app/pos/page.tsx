@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Header from '@/components/Header';
 import {
   Beer,
   Search,
@@ -494,9 +493,7 @@ export default function PosPage() {
   const allTablesList = areas.flatMap((a) => a.tables).filter((t) => selectedTable && t.id !== selectedTable.id);
 
   return (
-    <div className="min-h-screen bg-[#090d16] text-slate-100 flex flex-col font-sans">
-      <Header />
-
+    <>
       <main className="flex-1 max-w-[1920px] w-full mx-auto p-3 sm:p-4 grid grid-cols-1 lg:grid-cols-12 gap-4 h-[calc(100vh-4.25rem)] overflow-hidden">
         {/* ================= LEFT / MAIN CONTENT AREA (8 COLS) ================= */}
         <div className="lg:col-span-8 flex flex-col h-full gap-3 overflow-hidden">
@@ -1258,6 +1255,6 @@ export default function PosPage() {
 
       {/* Toast Notification Container */}
       <ToastContainer toasts={toasts} onClose={removeToast} />
-    </div>
+    </>
   );
 }
