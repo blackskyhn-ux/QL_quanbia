@@ -681,9 +681,9 @@ export default function InventoryPage() {
 
       {/* ================= MODAL NHẬP KHO ================= */}
       {importModalProduct && (
-        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="glass-card w-full max-w-md rounded-2xl border border-slate-800 p-6 space-y-4 shadow-2xl">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
+          <div className="glass-card w-full max-w-md rounded-2xl border border-slate-800 p-5 space-y-4 shadow-2xl max-h-[90vh] flex flex-col my-auto">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3 flex-shrink-0">
               <div>
                 <h3 className="text-base font-extrabold text-white flex items-center gap-2">
                   <PlusCircle className="w-5 h-5 text-emerald-400" /> Nhập Kho Thêm
@@ -695,7 +695,7 @@ export default function InventoryPage() {
               </button>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-4 overflow-y-auto flex-1 pr-1">
               <div>
                 <label className="block text-xs font-semibold text-slate-300 mb-1">
                   Số lượng nhập thêm ({importModalProduct.unit}):
@@ -735,7 +735,7 @@ export default function InventoryPage() {
               </div>
             </div>
 
-            <div className="flex gap-2 pt-2 border-t border-slate-800">
+            <div className="flex gap-2 pt-3 border-t border-slate-800 flex-shrink-0">
               <button
                 onClick={() => setImportModalProduct(null)}
                 className="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-bold"
@@ -757,9 +757,9 @@ export default function InventoryPage() {
 
       {/* ================= MODAL ĐIỀU CHỈNH KHO / KIỂM KÊ ================= */}
       {adjustModalProduct && (
-        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="glass-card w-full max-w-md rounded-2xl border border-slate-800 p-6 space-y-4 shadow-2xl">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
+          <div className="glass-card w-full max-w-md rounded-2xl border border-slate-800 p-5 space-y-4 shadow-2xl max-h-[90vh] flex flex-col my-auto">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3 flex-shrink-0">
               <div>
                 <h3 className="text-base font-extrabold text-white flex items-center gap-2">
                   <SlidersHorizontal className="w-5 h-5 text-amber-400" /> Kiểm Kê / Điều Chỉnh Tồn Kho
@@ -771,7 +771,7 @@ export default function InventoryPage() {
               </button>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-4 overflow-y-auto flex-1 pr-1">
               <div className="p-3 bg-slate-950 border border-slate-800 rounded-xl flex justify-between items-center text-xs">
                 <span className="text-slate-400">Tồn kho hiện tại trong hệ thống:</span>
                 <span className="font-mono font-bold text-white text-sm">
@@ -821,7 +821,7 @@ export default function InventoryPage() {
               </div>
             </div>
 
-            <div className="flex gap-2 pt-2 border-t border-slate-800">
+            <div className="flex gap-2 pt-3 border-t border-slate-800 flex-shrink-0">
               <button
                 onClick={() => setAdjustModalProduct(null)}
                 className="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-bold"
@@ -843,9 +843,9 @@ export default function InventoryPage() {
 
       {/* ================= MODAL CẤU HÌNH NGƯỠNG & GIÁ VỐN ================= */}
       {settingsModalProduct && (
-        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="glass-card w-full max-w-md rounded-2xl border border-slate-800 p-6 space-y-4 shadow-2xl">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
+          <div className="glass-card w-full max-w-md rounded-2xl border border-slate-800 p-5 space-y-4 shadow-2xl max-h-[90vh] flex flex-col my-auto">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3 flex-shrink-0">
               <div>
                 <h3 className="text-base font-extrabold text-white flex items-center gap-2">
                   <Settings className="w-5 h-5 text-amber-400" /> Cấu Hình Kho & Giá Vốn
@@ -857,7 +857,7 @@ export default function InventoryPage() {
               </button>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-4 overflow-y-auto flex-1 pr-1">
               <div>
                 <label className="block text-xs font-semibold text-slate-300 mb-1">
                   Ngưỡng cảnh báo sắp hết (Tối thiểu):
@@ -889,7 +889,7 @@ export default function InventoryPage() {
               </div>
             </div>
 
-            <div className="flex gap-2 pt-2 border-t border-slate-800">
+            <div className="flex gap-2 pt-3 border-t border-slate-800 flex-shrink-0">
               <button
                 onClick={() => setSettingsModalProduct(null)}
                 className="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-bold"
