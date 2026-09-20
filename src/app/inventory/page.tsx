@@ -137,6 +137,18 @@ export default function InventoryPage() {
     fetchCategories();
   }, []);
 
+  // Lock body scroll when any modal is open
+  useEffect(() => {
+    if (importModalProduct || adjustModalProduct || settingsModalProduct) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [importModalProduct, adjustModalProduct, settingsModalProduct]);
+
   const openImportModal = (product: Product) => {
     setImportModalProduct(product);
     setImportQty('10');
