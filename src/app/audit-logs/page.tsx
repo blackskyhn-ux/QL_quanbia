@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import Header from '@/components/Header';
 
 interface AuditLog {
   id: number;
@@ -181,10 +180,7 @@ export default function AuditLogsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans flex flex-col">
-      <Header />
-
-      <main className="flex-1 p-4 md:p-6 lg:p-8 max-w-7xl mx-auto w-full space-y-6">
+    <div className="flex-1 p-4 md:p-6 lg:p-8 max-w-7xl mx-auto w-full space-y-6">
         {/* Top Title Banner */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-900/80 p-5 rounded-2xl border border-slate-800 shadow-xl backdrop-blur-md">
           <div>
@@ -413,7 +409,6 @@ export default function AuditLogsPage() {
             </div>
           </div>
         </div>
-      </main>
 
       {/* JSON Diff & Detailed Modal */}
       {selectedLog && (
