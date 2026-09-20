@@ -32,6 +32,7 @@ export default function Header() {
   const router = useRouter();
 
   const [user, setUser] = useState<UserData | null>(null);
+  const [shopName, setShopName] = useState<string>('BIA CLUB POS');
   const [time, setTime] = useState<string>('');
   const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
 
@@ -43,13 +44,16 @@ export default function Header() {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setTime(new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
 
-    // Fetch user info
-    fetch('/api/auth/me')
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.success) setUser(data.user);
-      })
-      .catch(() => {});
+    // Fetch user info & shop settings
+    Promise.all([
+      fetch('/api/auth/me').then((r) => r.json()).catch(() => ({})),
+      fetch('/api/settings').then((r) => r.json()).catch(() => ({})),
+    ]).then(([userData, settingsData]) => {
+      if (userData.success) setUser(userData.user);
+      if (settingsData.success && settingsData.settings && settingsData.settings.shop_name) {
+        setShopName(settingsData.settings.shop_name);
+      }
+    });
 
     return () => clearInterval(timer);
   }, [pathname]);
@@ -98,8 +102,8 @@ export default function Header() {
             <Beer className="w-5 h-5 sm:w-6 sm:h-6 font-extrabold" />
           </div>
           <div>
-            <div className="text-sm sm:text-base font-black tracking-tight text-white flex items-center gap-1">
-              BIA CLUB <span className="text-amber-400">POS</span>
+            <div className="text-sm sm:text-base font-black tracking-tight text-white uppercase flex items-center gap-1">
+              {shopName}
             </div>
             <div className="text-[9px] sm:text-[10px] text-amber-500/80 uppercase font-semibold tracking-wider">
               Management System
